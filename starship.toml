@@ -1,0 +1,39 @@
+# Get editor completions based on the config schema
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# AwesomePanda Theme for Starship Prompt
+add_newline = false
+
+format = """
+$character\
+$directory\
+$git_branch\
+$git_status\
+$svn_status\ 
+"""
+# Success (green arrow) / Error (red arrow)
+[character]
+success_symbol = "➜"
+error_symbol = "➜"
+
+# Directory module
+[directory]
+style = "orange"
+truncation_length = 1
+
+# Git branch module
+[git_branch]
+format = '[[git:\($branch\)]($style)]($style)'
+style = "blue"
+
+# Git status module
+[git_status]
+format = "[[(*$conflicted$untracked$modified$staged$renamed$deleted)](218) ($ahead_behind$stashed)]($style)"
+conflicted = "✘"
+ahead = "⇡"
+behind = "⇣"
+diverged = "⇕"
+untracked = "?"
+stashed = "$"
+modified = "!"
+staged = "+"
