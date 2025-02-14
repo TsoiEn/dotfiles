@@ -40,4 +40,4 @@ p.s. Set up later
 - [ ] zsh
 - [ ] oh-my-zsh
 - [ ] starship
-- 
+- [ ] myenv
