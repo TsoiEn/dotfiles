@@ -1,18 +1,15 @@
 # theme
-theme = rose-pine
 background = #000000
+theme = rose-pine
 
 # fonts
 font-family = "JetbrainsMono Nerd Font Mono"
 font-size = 14
-font-family-bold = auto
-font-family-italic = auto
-font-family-bold-italic = auto
 
 # window decoration
 mouse-hide-while-typing = true
 window-decoration = false
-title = "👻 Ghostty "
+title = "👻 Ghostty"
 
 # pointer
 cursor-style = block

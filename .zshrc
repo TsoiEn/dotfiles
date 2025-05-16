@@ -1,1 +1,0 @@
-/home/tsoipad/dotfiles/.zshrc

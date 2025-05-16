@@ -1,0 +1,39 @@
+# -----------------------------------------------------
+# General
+# -----------------------------------------------------
+alias c='clear'
+alias ls='eza -a --icons=always'
+alias ll='eza -al --icons=always'
+alias lt='eza -a --tree --level=1 --icons=always'
+alias shutdown='systemctl poweroff'
+alias v='nvim .'
+alias vim='$EDITOR'
+alias ts='~/.config/ml4w/scripts/snapshot.sh'
+alias wifi='nmtui'
+alias cleanup='~/.config/ml4w/scripts/cleanup.sh'
+
+
+# -----------------------------------------------------
+# CUSTOM KEYBINDS
+# -----------------------------------------------------
+alias update='~/.config/scripts/update/update.sh'
+alias pass='~/.config/scripts/pass/pass.sh'
+alias pkg='~/.config/scripts/pkg/pkg.sh'
+alias hl='~/.config/scripts/savings/transaction.sh'
+alias total='hledger -f ~/.config/unknown/savings/savings.journal bal assets:bank:savings'
+alias cp='~/.config/scripts/projCreate/create.sh'
+alias doc='~/.config/scripts/doc/doc.sh'
+alias obsidian='flatpak run md.obsidian.Obsidian'
+alias cd='z'
+alias lg='lazygit'
+alias ld='lazydocker'
+alias pomo='~/.config/scripts/pomodoro/timer.sh'
+alias proj='~/.config/scripts/projectCreation/projectCreation.sh'
+
+# -----------------------------------------------------
+# CONDA KEYBINDS
+# -----------------------------------------------------
+alias acti='conda activate'
+alias fle='conda activate fle'
+alias school='conda activate school'
+alias deac='conda deactivate'

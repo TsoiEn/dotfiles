@@ -48,6 +48,4 @@ opt.cmdheight = 0 -- Reduce the command-line height
 opt.laststatus = 0 -- Hide the status line in some contexts
 
 -- Mouse (if needed, enable or adjust here)
-opt.mouse = ""
-
-
+-- opt.mouse = ''

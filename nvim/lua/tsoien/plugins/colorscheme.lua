@@ -3,11 +3,25 @@ return {
     name = "rose-pine",
     config = function()
         require("rose-pine").setup({
-            variant = "main", -- or "moon" / "dawn" depending on your preference
-            dark_variant = "main", -- Ensures a dark theme variant
+            variant = "main", -- main, moon, or dawn
+            dark_variant = "main", -- Used for dark variant
             disable_background = true, -- Makes the background transparent
-            extend_background_behind_borders = false, -- Prevents extending bg to floating windows
+            disable_float_background = true, -- Makes floating window backgrounds transparent 
+            disable_italics = false, -- Keeps italics enabled
+            -- Highlight groups can be customized
+            highlight_groups = {
+                -- Ensure consistent background colors
+                Normal = { bg = "none" },
+                NormalFloat = { bg = "none" },
+                StatusLine = { bg = "none" },
+                StatusLineNC = { bg = "none" },
+                SignColumn = { bg = "none" },
+                LineNr = { bg = "none" },
+            },
         })
         vim.cmd("colorscheme rose-pine")
-    end
+    end,
+    -- LazyVim specific settings
+    lazy = false,
+    priority = 1000, -- Ensures the colorscheme loads early
 }
