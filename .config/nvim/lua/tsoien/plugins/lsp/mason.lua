@@ -3,7 +3,7 @@ return {
 	dependencies = {
 		"williamboman/mason-lspconfig.nvim",
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
-		"hrsh7th/cmp-nvim-lsp", -- Required for capabilities
+		"hrsh7th/cmp-nvim-lsp",
 	},
 	config = function()
 		local mason = require("mason")
@@ -22,77 +22,59 @@ return {
 			},
 		})
 
+		local servers = {
+			"html",
+			"cssls",
+			"tailwindcss",
+			"svelte",
+			"emmet_ls",
+			"graphql",
+			"gopls",
+			"pyright",
+			"jdtls",
+			"clangd",
+			"omnisharp",
+			"sqls",
+			"dockerls",
+			"jsonls",
+			"yamlls",
+		}
+
 		mason_lspconfig.setup({
-			ensure_installed = {
-				-- Frontend
-				"html",
-				"cssls",
-				"tailwindcss",
-				"svelte",
-				"emmet_ls",
-				"tsserver",
-				"graphql",
-
-				-- Backend
-				"gopls",
-				"pyright",
-				"jdtls",
-				"clangd",
-				"omnisharp",
-				"sqlls",
-				"dockerls",
-
-				-- Config/Infra/Other
-				"jsonls",
-				"yamlls",
-			},
+			ensure_installed = servers,
 		})
 
 		mason_tool_installer.setup({
 			ensure_installed = {
-				-- Formatter: Web
+				-- Formatters
 				"prettier",
-				"stylelint",
-
-				-- Formatter: Lua
 				"stylua",
-
-				-- Formatter: Python
 				"black",
 				"isort",
-
-				-- Formatter: Go
 				"gofumpt",
 				"goimports",
-
-				-- Formatter: C/C++
 				"clang-format",
-
-				-- Formatter: SQL
 				"sql-formatter",
 
-				-- Linter: JS/TS
+				-- Linters
 				"eslint_d",
-
-				-- Linter: Python
 				"pylint",
-
-				-- Linter: Go
 				"golangci-lint",
-
-				-- Linter: Config/Markup
 				"jsonlint",
 				"yamllint",
 				"markdownlint",
 				"hadolint",
 				"sqlfluff",
 			},
+			auto_update = false,
 		})
 
-		for _, server_name in ipairs(mason_lspconfig.get_installed_servers()) do
-			lspconfig[server_name].setup({
-				capabilities = capabilities,
-			})
+		for _, server in ipairs(servers) do
+			if server ~= "lua_ls" then
+				lspconfig[server].setup({
+					capabilities = capabilities,
+				})
+			end
 		end
 	end,
 }

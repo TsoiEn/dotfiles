@@ -23,7 +23,7 @@ opt.clipboard:append("unnamedplus") -- Use system clipboard
 opt.backspace = "indent,eol,start" -- Allow backspacing over indentation, EOLs, and insert start
 
 -- Cursor and UI enhancements
-opt.cursorline = false -- Highlight the current line
+opt.cursorline = true -- Highlight the current line
 opt.termguicolors = true -- Enable 24-bit RGB colors
 opt.background = "dark" -- Use dark background
 opt.signcolumn = "yes" -- Always show the sign column
