@@ -1,0 +1,20 @@
+# theme
+background = #000000
+theme = rose-pine
+
+# font
+font-size = 14
+
+# window decoration
+mouse-hide-while-typing = true
+window-decoration = true
+window-width = 800
+window-height = 600
+title = "Ghostty"
+background-opacity = 0.8
+window-padding-balance = true
+window-padding-x = 5,7
+window-padding-y = 5,7
+
+# pointer
+cursor-style = block
