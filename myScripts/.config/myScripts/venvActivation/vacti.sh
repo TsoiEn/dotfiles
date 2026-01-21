@@ -1,18 +1,26 @@
 #!/usr/bin/env bash
 
-# Check if the venv directory exists
-if [ ! -d "./venv" ]; then
-  echo "No venv directory found in current directory."
-  exit 1
-fi
+# Directories to check (priority: .venv, then venv)
+for dir in .venv venv; do
+  if [ -d "./$dir" ]; then
+    if [ -f "./$dir/bin/activate" ]; then
+      # shellcheck disable=SC1090
+      source "./$dir/bin/activate"
+      clear
+      echo "$dir is successfully activated (bin/activate)."
+      return 0
+    elif [ -f "./$dir/Scripts/activate" ]; then
+      # shellcheck disable=SC1090
+      source "./$dir/Scripts/activate"
+      clear
+      echo "$dir is successfully activated (Scripts/activate)."
+      return 0
+    else
+      echo "No activate script found in $dir"
+      return 1
+    fi
+  fi
+done
 
-# Check for the activate script
-if [ -f "./venv/bin/activate" ]; then
-  # shellcheck disable=SC1091
-  source ./venv/bin/activate
-  clear
-  echo "venv is successfully activated."
-else
-  echo "No activate script found in ./venv/bin/activate"
-  exit 1
-fi
+echo "No venv or .venv directory found in current directory."
+return 1

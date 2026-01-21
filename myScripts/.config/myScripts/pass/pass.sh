@@ -1,7 +1,7 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-# Use the CURRENT user's home directory for all files
-BASE_DIR="$HOME/.config/myScripts/pass"
+# Use environment variable or default to /data for Docker compatibility
+BASE_DIR="${PASSMAN_DATA_DIR:-$HOME/.config/myScripts/pass}"
 PASSWORD_FILE="$BASE_DIR/passwords.enc"
 KEY_FILE="$BASE_DIR/keyfile"
 TEMP_FILE="$BASE_DIR/tempfile"
@@ -31,7 +31,7 @@ decrypt_password() {
 
 # Function to generate a random password with special characters
 generate_random_password() {
-  head /dev/urandom | tr -dc 'A-Za-z0-9!@#$%^&*()_+-=[]{}|;:,./<>?' | head -c 16
+  tr -dc 'A-Za-z0-9!@#$%^&*()_+-=[]{}|;:,./<>?' </dev/urandom | head -c 16
 }
 
 # Function to add a password
@@ -73,10 +73,82 @@ get_password() {
         echo -n "$decrypted_password" | wl-copy
         echo "Password for '$service' has been copied to the clipboard."
       else
-        echo "Error: 'wl-copy' not found. Please install wl-clipboard."
+        echo "Password for '$service': $decrypted_password"
       fi
     else
       echo "No password found for service: $service"
+    fi
+    rm -f "$TEMP_FILE"
+  else
+    echo "No passwords stored yet."
+  fi
+}
+
+# Function to delete a password
+delete_password() {
+  read -r -p "Enter service name to delete: " service
+
+  if [ -f "$PASSWORD_FILE" ]; then
+    decrypt_file
+    if grep -q "^$service: " "$TEMP_FILE"; then
+      grep -v "^$service: " "$TEMP_FILE" >"$TEMP_FILE.tmp"
+      mv "$TEMP_FILE.tmp" "$TEMP_FILE"
+      encrypt_file
+      echo "Password deleted for service: $service"
+    else
+      echo "No password found for service: $service"
+      rm -f "$TEMP_FILE"
+    fi
+  else
+    echo "No passwords stored yet."
+  fi
+}
+
+# Function to update a password
+update_password() {
+  read -r -p "Enter service name to update: " service
+
+  if [ -f "$PASSWORD_FILE" ]; then
+    decrypt_file
+    if grep -q "^$service: " "$TEMP_FILE"; then
+      read -r -sp "Enter new password (leave empty to generate a random password): " password
+      echo
+
+      if [ -z "$password" ]; then
+        password=$(generate_random_password)
+        echo "Generated random password: $password"
+      fi
+
+      encrypted_password=$(encrypt_password "$password")
+      grep -v "^$service: " "$TEMP_FILE" >"$TEMP_FILE.tmp"
+      echo "$service: $encrypted_password" >>"$TEMP_FILE.tmp"
+      mv "$TEMP_FILE.tmp" "$TEMP_FILE"
+      encrypt_file
+      echo "Password updated for service: $service"
+    else
+      echo "No password found for service: $service"
+      rm -f "$TEMP_FILE"
+    fi
+  else
+    echo "No passwords stored yet."
+  fi
+}
+
+# Function to search/filter services
+search_services() {
+  read -r -p "Enter search term: " search_term
+
+  if [ -f "$PASSWORD_FILE" ]; then
+    decrypt_file
+    results=$(grep -i "$search_term" "$TEMP_FILE")
+    if [ -n "$results" ]; then
+      printf "%-35s %-s\n" "Service" "Encrypted Password"
+      printf "%-35s %-s\n" "-------" "------------------"
+      echo "$results" | while IFS=: read -r service encrypted_password; do
+        printf "%-35s %s\n" "$service" "$encrypted_password"
+      done
+    else
+      echo "No services found matching: $search_term"
     fi
     rm -f "$TEMP_FILE"
   else
@@ -119,19 +191,31 @@ while true; do
   read -r -p "
 Password Manager
 [a] Add
+[d] Delete
 [e] Exit
 [g] Get Password
+[s] Search
+[u] Update
 Choose Option: " option
   clear
   case $option in
   a)
     add_password
     ;;
+  d)
+    delete_password
+    ;;
   e)
     exit 0
     ;;
   g)
     get_password
+    ;;
+  s)
+    search_services
+    ;;
+  u)
+    update_password
     ;;
   *) echo "Invalid option" ;;
   esac

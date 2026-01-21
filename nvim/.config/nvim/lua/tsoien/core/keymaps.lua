@@ -28,3 +28,7 @@ keymap.set("n", "<leader>sv", "<C-w>v", opts)
 keymap.set("n", "<leader>sh", "<C-w>s", opts)
 keymap.set("n", "<leader>se", "<C-w>=", opts)
 keymap.set("n", "<leader>sx", "<cmd>close<CR>", opts)
+
+-- Custom keys
+keymap.set("n", "<leader>rc", ":source $MYVIMRC<CR>", opts) -- Reload config
+keymap.set("n", "<leader>rr", ":LspRestart<CR>", opts) -- Reload config

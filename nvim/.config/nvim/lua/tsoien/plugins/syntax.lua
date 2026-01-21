@@ -36,7 +36,6 @@ return {
 					"c",
 					"cpp",
 					"c_sharp",
-					"sql",
 					"dockerfile",
 					-- Config & DB support
 					"json",

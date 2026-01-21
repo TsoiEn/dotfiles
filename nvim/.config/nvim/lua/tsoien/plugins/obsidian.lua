@@ -1,33 +1,45 @@
 return {
-	"epwalsh/obsidian.nvim",
-	version = "*", -- Use latest release
-	lazy = true,
-	ft = "markdown",
-	dependencies = {
-		"nvim-lua/plenary.nvim",
+	{
+		"iamcco/markdown-preview.nvim",
+		cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+		build = "cd app && npm install",
+		init = function()
+			vim.g.mkdp_filetypes = { "markdown" }
+		end,
+		ft = { "markdown" },
 	},
-	opts = {
-
-		workspaces = {
-			{
-				name = "work",
-				path = "~/Development/projects/Work/notes",
-			},
-		},
-
-		ui = {
-			enable = true, -- enable Obsidian UI features like conceal
-		},
+	{
+		"MeanderingProgrammer/render-markdown.nvim",
+		dependencies = { "nvim-treesitter/nvim-treesitter", "echasnovski/mini.nvim" },
+		opts = {},
 	},
-	config = function(_, opts)
-		require("obsidian").setup(opts)
+	{
+		"mfussenegger/nvim-lint",
+		ft = { "markdown" },
+		config = function()
+			local lint = require("lint")
 
-		-- Set conceallevel to 2 for markdown files
-		vim.api.nvim_create_autocmd("FileType", {
-			pattern = "markdown",
-			callback = function()
-				vim.opt_local.conceallevel = 2
-			end,
-		})
-	end,
+			lint.linters_by_ft = {
+				markdown = { "markdownlint-cli2" },
+			}
+
+			-- Custom args for markdownlint (instead of .markdownlint.json)
+			lint.linters["markdownlint-cli2"] = {
+				cmd = "markdownlint-cli2",
+				stdin = true,
+				args = {
+					"--stdin",
+					"--config",
+					vim.fn.stdpath("config") .. "/lint-config/markdownlint.json",
+				},
+			}
+
+			-- Auto-lint on save
+			vim.api.nvim_create_autocmd({ "BufWritePost" }, {
+				callback = function()
+					require("lint").try_lint()
+				end,
+			})
+		end,
+	},
 }

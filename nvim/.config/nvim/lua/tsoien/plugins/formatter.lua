@@ -25,7 +25,6 @@ return {
 				go = { "goimports", "gofumpt" },
 				c = { "clang_format" },
 				cpp = { "clang_format" },
-				sql = { "sql_formatter" },
 			},
 
 			format_on_save = {

@@ -34,7 +34,6 @@ return {
 			"jdtls",
 			"clangd",
 			"omnisharp",
-			"sqls",
 			"dockerls",
 			"jsonls",
 			"yamlls",
@@ -54,7 +53,6 @@ return {
 				"gofumpt",
 				"goimports",
 				"clang-format",
-				"sql-formatter",
 
 				-- Linters
 				"eslint_d",
@@ -64,7 +62,6 @@ return {
 				"yamllint",
 				"markdownlint",
 				"hadolint",
-				"sqlfluff",
 			},
 			auto_update = false,
 		})

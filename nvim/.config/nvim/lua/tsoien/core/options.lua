@@ -5,8 +5,8 @@ opt.number = true -- Enable line numbers
 opt.relativenumber = true -- Enable relative line numbers
 
 -- Tabs & indentation
-opt.tabstop = 2 -- Number of spaces a tab counts for
-opt.shiftwidth = 2 -- Number of spaces for auto-indents
+opt.tabstop = 4 -- Number of spaces a tab counts for
+opt.shiftwidth = 4 -- Number of spaces for auto-indents
 opt.expandtab = true -- Use spaces instead of tabs
 opt.autoindent = true -- Enable auto-indentation
 opt.smartindent = true -- Smarter auto-indentation
