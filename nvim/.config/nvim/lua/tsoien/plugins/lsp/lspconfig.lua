@@ -6,10 +6,10 @@ return {
 		vim.diagnostic.config({
 			signs = {
 				text = {
-					[vim.diagnostic.severity.ERROR] = "",
-					[vim.diagnostic.severity.WARN] = "",
+					[vim.diagnostic.severity.ERROR] = "",
+					[vim.diagnostic.severity.WARN] = "",
 					[vim.diagnostic.severity.HINT] = "󰠠",
-					[vim.diagnostic.severity.INFO] = "",
+					[vim.diagnostic.severity.INFO] = "",
 				},
 			},
 			underline = true,
@@ -30,7 +30,8 @@ return {
 			end,
 		})
 
-		require("lspconfig").lua_ls.setup({
+		-- New vim.lsp.config API (Neovim 0.11+)
+		vim.lsp.config("lua_ls", {
 			settings = {
 				Lua = {
 					runtime = {
@@ -50,5 +51,8 @@ return {
 				},
 			},
 		})
+
+		-- Enable the LSP server
+		vim.lsp.enable("lua_ls")
 	end,
 }

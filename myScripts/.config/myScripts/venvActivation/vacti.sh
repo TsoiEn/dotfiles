@@ -8,19 +8,19 @@ for dir in .venv venv; do
       source "./$dir/bin/activate"
       clear
       echo "$dir is successfully activated (bin/activate)."
-      return 0
+      exit 0
     elif [ -f "./$dir/Scripts/activate" ]; then
       # shellcheck disable=SC1090
       source "./$dir/Scripts/activate"
       clear
       echo "$dir is successfully activated (Scripts/activate)."
-      return 0
+      exit 0
     else
       echo "No activate script found in $dir"
-      return 1
+      exit 1
     fi
   fi
 done
 
 echo "No venv or .venv directory found in current directory."
-return 1
+exit 1
