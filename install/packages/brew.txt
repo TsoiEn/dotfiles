@@ -1,0 +1,15 @@
+# Core tools
+neovim
+tmux
+git
+zsh
+fzf
+ripgrep
+zoxide
+yazi
+eza
+lazygit
+lazydocker
+
+# GUI apps (casks)
+# cask:ghostty
