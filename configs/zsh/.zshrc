@@ -2,19 +2,21 @@
 
 export EDITOR="nvim"
 
-# Add custom bin to PATH
 export PATH="$HOME/.local/bin:$PATH"
 
 ZSHRC_DIR="$HOME/.config/zshrc"
 
-if [ -d "$ZSHRC_DIR" ]; then
-	for file in "$ZSHRC_DIR"/*.zsh; do
-		[ -r "$file" ] && . "$file"
-	done
+if [[ -d "$ZSHRC_DIR" ]]; then
+    for file in "$ZSHRC_DIR"/*.zsh(N); do
+        [[ -r "$file" ]] && source "$file"
+    done
 
-	if [ -d "$ZSHRC_DIR/custom" ]; then
-		for file in "$ZSHRC_DIR/custom"/*.zsh; do
-			[ -r "$file" ] && . "$file"
-		done
-	fi
+    if [[ -d "$ZSHRC_DIR/custom" ]]; then
+        for file in "$ZSHRC_DIR/custom"/*.zsh(N); do
+            [[ -r "$file" ]] && source "$file"
+        done
+    fi
 fi
+
+# Comment this if you're using linux
+source /opt/homebrew/opt/nvm/nvm.sh
