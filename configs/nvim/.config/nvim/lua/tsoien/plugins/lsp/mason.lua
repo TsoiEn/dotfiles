@@ -9,7 +9,6 @@ return {
 		local mason = require("mason")
 		local mason_lspconfig = require("mason-lspconfig")
 		local mason_tool_installer = require("mason-tool-installer")
-		local lspconfig = require("lspconfig")
 		local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
 		-- Mason setup
@@ -41,7 +40,7 @@ return {
 			"yamlls",
 		}
 
-		-- Ensure servers installed
+		-- Ensure servers are installed
 		mason_lspconfig.setup({
 			ensure_installed = servers,
 		})
@@ -70,24 +69,27 @@ return {
 			auto_update = false,
 		})
 
-		-- --------------------------
-		-- FIXED: gopls config to stop duplicate diagnostics
-		-- --------------------------
-		lspconfig.gopls.setup({
+		-- gopls configuration
+		vim.lsp.config("gopls", {
 			capabilities = capabilities,
 			settings = {
 				gopls = {
-					staticcheck = false, -- disables duplicate unusedfunc diagnostics
+					staticcheck = false,
 				},
 			},
 		})
 
-		-- Setup other servers
+		-- Enable gopls
+		vim.lsp.enable("gopls")
+
+		-- Configure and enable other servers
 		for _, server in ipairs(servers) do
-			if server ~= "lua_ls" and server ~= "gopls" then
-				lspconfig[server].setup({
+			if server ~= "gopls" then
+				vim.lsp.config(server, {
 					capabilities = capabilities,
 				})
+
+				vim.lsp.enable(server)
 			end
 		end
 	end,
