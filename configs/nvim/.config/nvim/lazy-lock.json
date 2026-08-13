@@ -36,7 +36,7 @@
   "rose-pine": { "branch": "main", "commit": "cf2a288696b03d0934da713d66c6d71557b5c997" },
   "telescope-file-browser.nvim": { "branch": "master", "commit": "3610dc7dc91f06aa98b11dca5cc30dfa98626b7e" },
   "telescope-fzf-native.nvim": { "branch": "main", "commit": "6fea601bd2b694c6f2ae08a6c6fab14930c60e2c" },
-  "telescope.nvim": { "branch": "0.1.x", "commit": "a0bbec21143c7bc5f8bb02e0005fa0b982edc026" },
+  "telescope.nvim": { "branch": "master", "commit": "a0bbec21143c7bc5f8bb02e0005fa0b982edc026" },
   "treesitter-modules.nvim": { "branch": "main", "commit": "dbded29dade0ff4435642530ec2b5a81730f8e1a" },
   "trouble.nvim": { "branch": "main", "commit": "bd67efe408d4816e25e8491cc5ad4088e708a69a" },
   "undotree": { "branch": "main", "commit": "0e6d41d55ad147407e4ba00a292973de8db0b836" },

@@ -2,6 +2,10 @@
 
 export EDITOR="nvim"
 
+# Homebrew
+export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
+
+# User binaries
 export PATH="$HOME/.local/bin:$PATH"
 
 ZSHRC_DIR="$HOME/.config/zshrc"
