@@ -2,6 +2,7 @@
 # background = #000000
 theme = Rose Pine
 
+
 # font
 font-size = 14
 
@@ -15,6 +16,7 @@ background-opacity = 0.8
 window-padding-balance = true
 window-padding-x = 5,7
 window-padding-y = 5,7
+#background-opacity = 0.3
 
 # pointer
 cursor-style = block
