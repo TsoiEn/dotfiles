@@ -12,7 +12,7 @@ opt.autoindent = true -- Enable auto-indentation
 opt.smartindent = true -- Smarter auto-indentation
 
 -- Wrapping
-opt.wrap = true -- Disable line wrapping
+opt.wrap = false -- Disable line wrapping
 opt.linebreak = true -- Break lines at word boundaries when wrapping is enabled
 opt.breakindent = true -- Indent wrapped lines visually
 

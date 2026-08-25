@@ -16,6 +16,7 @@ return {
 	{
 		"mfussenegger/nvim-lint",
 		ft = { "markdown" },
+
 		config = function()
 			local lint = require("lint")
 
@@ -23,21 +24,17 @@ return {
 				markdown = { "markdownlint-cli2" },
 			}
 
-			-- Custom args for markdownlint (instead of .markdownlint.json)
-			lint.linters["markdownlint-cli2"] = {
-				cmd = "markdownlint-cli2",
-				stdin = true,
-				args = {
-					"--stdin",
-					"--config",
-					vim.fn.stdpath("config") .. "/lint-config/markdownlint.json",
-				},
+			-- Customize the existing markdownlint-cli2 definition
+			lint.linters["markdownlint-cli2"].args = {
+				"--stdin",
+				"--config",
+				vim.fn.stdpath("config") .. "/lint-config/markdownlint.json",
 			}
 
 			-- Auto-lint on save
-			vim.api.nvim_create_autocmd({ "BufWritePost" }, {
+			vim.api.nvim_create_autocmd("BufWritePost", {
 				callback = function()
-					require("lint").try_lint()
+					lint.try_lint()
 				end,
 			})
 		end,
