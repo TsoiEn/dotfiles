@@ -20,3 +20,5 @@ window-padding-y = 5,7
 
 # pointer
 cursor-style = block
+keybind = ctrl+tab=text:\x1b[9;1~
+keybind = ctrl+shift+tab=text:\x1b[9;2~

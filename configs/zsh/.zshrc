@@ -24,3 +24,11 @@ fi
 
 # Comment this if you're using linux
 source /opt/homebrew/opt/nvm/nvm.sh
+
+# pnpm
+export PNPM_HOME="/Users/Aaron/Library/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME/bin:"*) ;;
+  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
+esac
+# pnpm end

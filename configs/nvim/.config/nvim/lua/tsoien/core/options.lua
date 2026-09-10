@@ -5,11 +5,15 @@ opt.number = true -- Enable line numbers
 opt.relativenumber = true -- Enable relative line numbers
 
 -- Tabs & indentation
-opt.tabstop = 4 -- Number of spaces a tab counts for
-opt.shiftwidth = 4 -- Number of spaces for auto-indents
+-- Change this single value to re-indent every buffer uniformly
+local indent_width = 4
+opt.tabstop = indent_width -- Number of spaces a tab counts for
+opt.softtabstop = indent_width -- Spaces inserted when pressing <Tab> in insert mode
+opt.shiftwidth = indent_width -- Number of spaces for auto-indents
 opt.expandtab = true -- Use spaces instead of tabs
 opt.autoindent = true -- Enable auto-indentation
 opt.smartindent = true -- Smarter auto-indentation
+opt.shiftround = true -- Round indents to multiples of 'shiftwidth'
 
 -- Wrapping
 opt.wrap = false -- Disable line wrapping
