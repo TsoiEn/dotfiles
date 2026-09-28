@@ -5,7 +5,7 @@ alias ..='cd ..'
 alias c='clear'
 alias ls='eza -a --icons=always'
 alias ll='eza -al --icons=always'
-alias lt='eza -a --tree --level=1 --icons=always'
+alias lt='eza -a --tree --level=3 --icons=always'
 alias shutdown='systemctl poweroff'
 alias v='nvim .'
 alias vim='$EDITOR'
@@ -36,3 +36,11 @@ compinit
 alias ld='lazydocker'
 alias lg='lazygit'
 alias ts='~/.config/tmuxScript/sessionizer.sh'
+alias oc='opencode'
+alias src='source ~/.zshrc'
+
+
+# -----------------------------------------------------
+# Work
+# -----------------------------------------------------
+alias cps="~/Development/Work/frontend-monorepo/apps/app-e2e/scripts/run-e2e-staging.sh"

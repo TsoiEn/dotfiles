@@ -41,9 +41,11 @@ case "$OS" in
 esac
 
 log_info "Running setup scripts"
+# setup-symlinks runs FIRST so setup-nvim/setup-ghostty can verify the
+# links they report on.
+bash "$DOTFILES_ROOT/scripts/setup-symlinks.sh"
 bash "$DOTFILES_ROOT/scripts/setup-nvim.sh"
 bash "$DOTFILES_ROOT/scripts/setup-tmux.sh"
 bash "$DOTFILES_ROOT/scripts/setup-ghostty.sh"
-bash "$DOTFILES_ROOT/scripts/setup-symlinks.sh"
 
 log_success "Bootstrap complete"

@@ -12,8 +12,8 @@ keymap.set("n", "<leader>nh", ":nohl<CR>", {}) -- clear search highlight
 keymap.set("n", "x", '"_x')
 
 -- Increment/decrement
-keymap.set("n", "+", "<C-a>")
-keymap.set("n", "-", "<C-x>")
+keymap.set("n", "+", "<C-x>")
+keymap.set("n", "-", "<C-a>")
 
 -- Select all
 keymap.set("n", "<C-a>", "gg<S-v>G")
