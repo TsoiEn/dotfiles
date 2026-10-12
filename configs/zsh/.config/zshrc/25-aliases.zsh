@@ -44,3 +44,11 @@ alias src='source ~/.zshrc'
 # Work
 # -----------------------------------------------------
 alias cps="~/Development/Work/frontend-monorepo/apps/app-e2e/scripts/run-e2e-staging.sh"
+alias startwork='~/Development/setup.sh'
+
+devstart() {
+    git pull &&
+    ./service.sh setup &&
+    ./service.sh start &&
+    ld
+}

@@ -12,13 +12,12 @@ window-decoration = true
 window-width = 800
 window-height = 600
 title = "×͜×"
-background-opacity = 0.8
+background-opacity = 0.7
 window-padding-balance = true
 window-padding-x = 5,7
 window-padding-y = 5,7
-#background-opacity = 0.3
+macos-titlebar-style = tabs   
+macos-non-native-fullscreen = true
 
 # pointer
 cursor-style = block
-keybind = ctrl+tab=text:\x1b[9;1~
-keybind = ctrl+shift+tab=text:\x1b[9;2~

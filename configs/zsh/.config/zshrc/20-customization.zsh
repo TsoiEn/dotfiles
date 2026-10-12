@@ -1,7 +1,8 @@
 # -----------------------------------------------------
 # oh-my-zsh
+# sonicradish
 # -----------------------------------------------------
-ZSH_THEME="robbyrussell"
+ZSH_THEME="sonicradish"
 
 plugins=(
     git

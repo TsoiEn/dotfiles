@@ -3,26 +3,18 @@ return {
 	{
 		"rose-pine/neovim",
 		name = "rose-pine",
-		config = function()
-			require("rose-pine").setup({
-				variant = "main",
-				dark_variant = "main",
-				disable_background = true,
-				disable_float_background = true,
-				disable_italics = false,
-				highlight_groups = {
-					Normal = { bg = "none" },
-					NormalFloat = { bg = "none" },
-					StatusLine = { bg = "none" },
-					StatusLineNC = { bg = "none" },
-					SignColumn = { bg = "none" },
-					LineNr = { bg = "none" },
-				},
-			})
-			vim.cmd("colorscheme rose-pine")
-		end,
 		lazy = false,
 		priority = 1000,
+		config = function()
+			require("rose-pine").setup({
+				-- everything else left at rose-pine's defaults (variant main)
+				styles = {
+					transparency = true,
+				},
+			})
+
+			vim.cmd("colorscheme rose-pine")
+		end,
 	},
 
 	-- Keybinding hints
@@ -214,7 +206,7 @@ return {
 		"rcarriga/nvim-notify",
 		opts = {
 			timeout = 3000,
-			background_colour = "#000000",
+			background_colour = "#191724",
 			render = "wrapped-compact",
 		},
 	},

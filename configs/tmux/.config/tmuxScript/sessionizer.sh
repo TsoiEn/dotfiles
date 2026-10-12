@@ -10,18 +10,18 @@
 # Two views:
 #   SESSIONS view (default, shown when any tmux session already exists) —
 #     lists only live sessions.
-#       enter    switch/attach to the highlighted session
+#       enter    switch/attach to the highlighted session; if what you typed
+#                matches no row, create a session with that name
 #       ctrl-e   kill the session under the cursor
-#       ctrl-n   with something typed: create a session with that name
-#                with nothing typed: drop into the full directory browser
+#       ctrl-n   jump to the FULL view (the "dashboard"); never creates
 #       esc      quit
-#   FULL view (shown when there are no sessions yet, or via ctrl-n above) —
-#     lists live sessions + zoxide directories.
+#   FULL view (the dashboard — shown when there are no sessions yet, or via
+#     ctrl-n above) — lists live sessions + zoxide directories.
 #       enter    open the highlighted session, or create+open one from the
-#                highlighted directory
+#                highlighted directory; if what you typed matches no row,
+#                create a session with that name
 #       ctrl-e   kill the session under the cursor
-#       ctrl-n   with something typed: create a session with that name
-#                with nothing typed: just re-show this view
+#       ctrl-n   not applicable (ignored)
 #       esc      quit
 #
 # Requires: tmux, fzf, zoxide
@@ -39,8 +39,8 @@ POPUP_W="85%"
 POPUP_H="80%"
 POPUP_FLAG="TS_IN_POPUP"
 
-SESSIONS_HEADER="  enter switch · ctrl-n new (type a name, or empty to browse) · ctrl-e kill · esc quit"
-FULL_HEADER="  enter open/create · ctrl-n new session by name · ctrl-e kill · esc quit"
+SESSIONS_HEADER="  enter switch (type a name to create) · ctrl-n dashboard · ctrl-e kill · esc quit"
+FULL_HEADER="  enter open/create (type a name to create) · ctrl-e kill · esc quit"
 
 # ---------------------------------------------------------------------------
 # Entry point / dispatch
@@ -50,8 +50,8 @@ main() {
   # ctrl-e via execute-silent+reload), so skip the realpath resolve there —
   # it's only needed to build the self-referencing fzf binds.
   case "${1:-}" in
-    --kill)          kill_session "$2"; return ;;
-    --list)          build_full_candidates; return ;;
+    --kill)           kill_session "${2:-}"; return ;;
+    --list)           build_full_candidates; return ;;
     --list-sessions)  build_sessions_candidates; return ;;
   esac
 
@@ -89,6 +89,36 @@ run_picker() {
   fi
 }
 
+# Shared handling of fzf's output.
+#   second line == __CTRLN__  -> always just open the dashboard (FULL view).
+#   status 0                  -> a real selection; open it.
+#   status 1 + typed query    -> nothing matched; treat the query as the name
+#                                of a new session (the custom-name path).
+# Cancels (130/2) and empty output open nothing.
+handle_picker_output() {
+  local status="$1" out="$2" query second
+
+  [[ $status -eq 130 || $status -eq 2 || -z "$out" ]] && return 0
+  query="$(sed -n '1p' <<< "$out")"
+  second="$(sed -n '2p' <<< "$out")"
+
+  # ctrl-n only ever means "open the dashboard" now.
+  if [[ "$second" == "__CTRLN__" ]]; then
+    run_full_view
+    return 0
+  fi
+
+  if [[ $status -eq 0 ]]; then
+    [[ -n "$second" ]] && open_line "$second"
+    return 0
+  fi
+
+  if [[ $status -eq 1 && -n "$query" ]]; then
+    create_named_session "$query"
+  fi
+  return 0
+}
+
 # ---------------------------------------------------------------------------
 # SESSIONS view
 # ---------------------------------------------------------------------------
@@ -103,8 +133,7 @@ run_sessions_view() {
     return
   fi
 
-  local out status query second
-
+  local out status
   set +e
   out="$(printf '%s\n' "$candidates" | fzf \
     --ansi --delimiter '\t' --with-nth=1 \
@@ -116,20 +145,7 @@ run_sessions_view() {
   status=$?
   set -e
 
-  [[ $status -ne 0 || -z "$out" ]] && return 0
-
-  query="$(sed -n '1p' <<< "$out")"
-  second="$(sed -n '2p' <<< "$out")"
-
-  if [[ "$second" == "__CTRLN__" ]]; then
-    if [[ -n "$query" ]]; then
-      create_named_session "$query"
-    else
-      run_full_view
-    fi
-  else
-    [[ -n "$second" ]] && open_line "$second"
-  fi
+  handle_picker_output "$status" "$out"
 }
 
 # ---------------------------------------------------------------------------
@@ -145,7 +161,7 @@ run_full_view() {
     return
   fi
 
-  local out status query second
+  local out status
 
   set +e
   out="$(printf '%s\n' "$candidates" | fzf \
@@ -154,24 +170,11 @@ run_full_view() {
     --header "$FULL_HEADER" --header-first --layout=reverse --border=rounded \
     --print-query \
     --bind "ctrl-e:execute-silent(\"$self\" --kill {3})+reload(\"$self\" --list)" \
-    --bind 'ctrl-n:print(__CTRLN__)+accept')"
+    --bind 'ctrl-n:ignore')"
   status=$?
   set -e
 
-  [[ $status -ne 0 || -z "$out" ]] && return 0
-
-  query="$(sed -n '1p' <<< "$out")"
-  second="$(sed -n '2p' <<< "$out")"
-
-  if [[ "$second" == "__CTRLN__" ]]; then
-    if [[ -n "$query" ]]; then
-      create_named_session "$query"
-    else
-      run_full_view
-    fi
-  else
-    [[ -n "$second" ]] && open_line "$second"
-  fi
+  handle_picker_output "$status" "$out"
 }
 
 # ---------------------------------------------------------------------------
@@ -257,14 +260,32 @@ start_dir() {
 }
 
 # Create (if needed) and attach to a session named after whatever the user
-# typed — this is the ctrl-n "custom name" path. tmux session names can't
+# typed — this is the enter-with-no-match "custom name" path. tmux session names can't
 # contain dots, so those get folded the same way directory-derived names are.
 create_named_session() {
   local raw_name="$1" name dir
-  name="${raw_name//./_}"
+  # Trim leading/trailing whitespace (pure bash, no subprocess).
+  name="${raw_name#"${raw_name%%[![:space:]]*}"}"
+  name="${name%"${name##*[![:space:]]}"}"
+  # tmux rejects both '.' and ':' in session names.
+  name="${name//./_}"
+  name="${name//:/_}"
+  # Drop leading dashes so the name can never be mistaken for a tmux option,
+  # then re-trim and re-check: sanitizing may leave nothing usable.
+  name="${name#"${name%%[!-]*}"}"
+  name="${name#"${name%%[![:space:]]*}"}"
+  [[ -z "$name" ]] && return 0
   dir="$(start_dir)"
   if ! tmux has-session -t "=$name" 2>/dev/null; then
-    tmux new-session -d -s "$name" -c "$dir"
+    local err
+    if ! err="$(tmux new-session -d -s "$name" -c "$dir" 2>&1)"; then
+      printf 'sessionizer: failed to create session "%s": %s\n' "$name" "$err" >&2
+      if [[ -n "${TMUX:-}" ]]; then
+        tmux display-message "sessionizer: failed to create session \"$name\": $err" 2>/dev/null || true
+      fi
+      sleep 2
+      return 0
+    fi
   fi
   attach_or_switch "$name"
 }
