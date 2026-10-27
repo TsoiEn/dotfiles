@@ -4,7 +4,7 @@
 
 ## The link map
 
-Six directory-level targets, declared as `repo-relative source | $HOME-relative destination`:
+Seven directory-level targets, declared as `repo-relative source | $HOME-relative destination`:
 
 | Source | Target |
 |---|---|
@@ -14,6 +14,7 @@ Six directory-level targets, declared as `repo-relative source | $HOME-relative 
 | `configs/tmux/.tmux.conf` | `~/.tmux.conf` |
 | `configs/tmux/.config/tmuxScript` | `~/.config/tmuxScript` |
 | `configs/ghostty/.config/ghostty` | `~/.config/ghostty` |
+| `configs/myscripts/.config/myscripts` | `~/.config/myscripts` |
 
 **Directory-level, not file-level:** each entry links a whole directory (or a single top-level file), so adding a file inside `~/.config/nvim/` requires no changes here. The tradeoff is that merging into a pre-existing real directory is not possible — the directory gets backed up wholesale.
 

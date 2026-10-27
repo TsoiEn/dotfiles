@@ -5,7 +5,8 @@ alias ..='cd ..'
 alias c='clear'
 alias ls='eza -a --icons=always'
 alias ll='eza -al --icons=always'
-alias lt='eza -a --tree --level=3 --icons=always'
+# alias lt='eza -a --tree --level=3 --icons=always'
+alias lt='eza -a --tree --level=3 --icons=always --ignore-glob=".git|.venv|venv|__pycache__|node_modules|.pytest_cache|.mypy_cache|.ruff_cache|.next|.nuxt|dist|build|coverage|.DS_Store"'
 alias shutdown='systemctl poweroff'
 alias v='nvim .'
 alias vim='$EDITOR'
@@ -38,6 +39,8 @@ alias lg='lazygit'
 alias ts='~/.config/tmuxScript/sessionizer.sh'
 alias oc='opencode'
 alias src='source ~/.zshrc'
+# clone with the identity of the directory you're in (Personal vs Work)
+alias gclone='~/.config/myscripts/gclone.sh'
 
 
 # -----------------------------------------------------

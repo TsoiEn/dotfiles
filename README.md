@@ -30,7 +30,7 @@ The installer previously referenced a `scripts/` directory that did not exist, s
 | `scripts/setup-nvim.sh` | Verifies config wiring + lazy.nvim state; optional `SETUP_NVIM_SYNC=1` |
 | `scripts/setup-ghostty.sh` | Detects Ghostty (CLI or app bundle) + verifies config link |
 
-Symlink map — 6 directory-level targets:
+Symlink map — 7 directory-level targets:
 
 | Source | Target |
 |---|---|
@@ -40,6 +40,7 @@ Symlink map — 6 directory-level targets:
 | `configs/tmux/.tmux.conf` | `~/.tmux.conf` |
 | `configs/tmux/.config/tmuxScript` | `~/.config/tmuxScript` |
 | `configs/ghostty/.config/ghostty` | `~/.config/ghostty` |
+| `configs/myscripts/.config/myscripts` | `~/.config/myscripts` |
 
 Also included: physical-path canonicalization (idempotent even through symlinked repo paths), validate-first ordering (a broken repo never half-links `$HOME`), and a test suite of **50+ checks** (sandboxed end-to-end runs, stubbed package managers, tripwires against the live machine).
 
@@ -96,7 +97,7 @@ dotfiles/
 │   ├── setup-nvim.sh
 │   └── setup-ghostty.sh
 ├── configs/                  # mirrored tree, symlinked into $HOME
-│   ├── zsh/  nvim/  tmux/  ghostty/
+│   ├── zsh/  nvim/  tmux/  ghostty/  myscripts/
 ├── wiki/                     # installer documentation
 ├── logs/                     # generated at runtime (not tracked)
 └── backups/                  # generated at runtime (not tracked)
@@ -110,6 +111,7 @@ dotfiles/
 | Neovim | `configs/nvim/` | `~/.config/nvim/` | ✅ linked (duplicate plugin specs → Phase 4) |
 | tmux | `configs/tmux/` | `~/.tmux.conf`, `~/.config/tmuxScript/` | ✅ linked + tpm installer |
 | Ghostty | `configs/ghostty/` | `~/.config/ghostty/` | ✅ linked (cask commented out in `brew.txt`) |
+| my scripts | `configs/myscripts/` | `~/.config/myscripts/` | ✅ linked (`gclone` → [wiki/gclone.md](wiki/gclone.md)) |
 | git | — | — | ⏳ planned (original spec) |
 
 ## Restoring a backup

@@ -5,7 +5,7 @@
 # Entry point: bootstrap.sh runs this FIRST (before the per-app setup
 # scripts), so setup-nvim.sh can verify ~/.config/nvim afterwards.
 #
-# Strategy: directory-level links — six top-level targets, whole
+# Strategy: directory-level links — seven top-level targets, whole
 # directories linked at once. New files added under configs/ inside those
 # directories require no changes here.
 #
@@ -51,6 +51,7 @@ LINK_MAP=(
   "configs/tmux/.tmux.conf|.tmux.conf"
   "configs/tmux/.config/tmuxScript|.config/tmuxScript"
   "configs/ghostty/.config/ghostty|.config/ghostty"
+  "configs/myscripts/.config/myscripts|.config/myscripts"
 )
 
 LINKED=0

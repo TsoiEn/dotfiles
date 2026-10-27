@@ -18,6 +18,7 @@ Documentation for how the installer works, how to operate it, and how to extend 
 | [backups.md](backups.md) | `backup_path`, session directories, safety rails, restoring files |
 | [logging.md](logging.md) | `log_init`, the shared `LOG_FILE` contract, log format and overrides |
 | [packages.md](packages.md) | Package list format, pacman/paru/brew install loops, known gaps |
+| [gclone.md](gclone.md) | The `gclone` helper: per-directory GitHub identity for `git clone` |
 
 ## Guides
 
