@@ -1,41 +1,25 @@
 # Plan
 
-## git clone separation helper script
-
-### problem to solve
-
-Currently I have a two accounts (work and personal). There are two distinct directory in my ~/Development/ directory which are (Work & Perosnal).
-based on my config this is how i could clone repository from two accounts
-
-```bash
-# Work GitHub
-Host github.com
-    HostName github.com
-    User git
-    IdentityFile ~/.ssh/id_ed25519
-    AddKeysToAgent yes
-    UseKeychain yes
-    IdentitiesOnly yes
-
-# Personal GitHub
-Host github-personal
-    HostName github.com
-    User git
-    IdentityFile ~/.ssh/id_ed25519_personal
-    AddKeysToAgent yes
-    UseKeychain yes
-    IdentitiesOnly yes
-```
+## Git visualizer
 
 - feature
-  - I want the script to detect in what directory I'm in.
-    - exmaple: im in the Personal/ directory so it will change the naming of this repo git@github.com:TsoiEn/GoTask.git -> git@github-personal:TsoiEn/GoTask.git
-    - If im in work it will stay at ease
-  - I need just {prompt shortcut} git@github.com:TsoiEn/GoTask.git and it automatically process the changes
-  - another thing is, if the repo is for personal, in .git/config in should add the part of this
-  ```bash
-  [user]
-  name = TsoiEn
-  email = paulanrenz23@gmail.com
+  - globalized git status
+    - so that i know what repo or directory is currently is development or it have any changes that needs to be pushed
+  - gstats is the alias
 
-  ```
+### Status: shipped
+
+`gstats.sh` → `~/.config/myscripts/gstats.sh`, aliased `gstats`.
+
+Scans every repo under `~/Development` and prints one table: branch,
+ahead/behind, staged/unstaged/untracked/conflicts/stashes, last-commit age.
+Only repos wanting attention are listed (`-a` for all), newest activity
+first. No network unless `-f`.
+
+Docs: [wiki/gstats.md](../../wiki/gstats.md)
+
+### Ideas not built
+
+- `--json` output, for piping into a status bar
+- a tmux/ghostty status-line summary ("3 dirty, 2 unpushed")
+- `gstats --push` to push everything that is only ahead and otherwise clean

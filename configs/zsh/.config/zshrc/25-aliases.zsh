@@ -39,8 +39,31 @@ alias lg='lazygit'
 alias ts='~/.config/tmuxScript/sessionizer.sh'
 alias oc='opencode'
 alias src='source ~/.zshrc'
-# clone with the identity of the directory you're in (Personal vs Work)
-alias gclone='~/.config/myscripts/gclone.sh'
+# clone with the identity of the directory you're in (Personal vs Work), then
+# cd into the new repo. The script runs in its own process and so cannot move
+# this shell — it writes the directory it cloned into to $GCLONE_CD_FILE and we
+# follow it here. `gclone --no-cd ...` stays put.
+#
+# The unalias + quoted name matter: this used to be a plain alias, and in zsh an
+# alias both shadows a same-named function and is expanded while the function
+# definition is parsed ("defining function based on alias"), so re-sourcing from
+# a shell that still holds the old alias would fail without these two lines.
+unalias gclone 2>/dev/null
+'gclone'() {
+    local cd_file dir rc    # not `status`: that name is read-only in zsh
+    cd_file="$(mktemp -t gclone)" || return 1
+    GCLONE_CD_FILE="$cd_file" ~/.config/myscripts/gclone.sh "$@"
+    rc=$?
+    dir="$(<"$cd_file")"
+    rm -f -- "$cd_file"
+    if (( rc == 0 )) && [[ -n "$dir" && -d "$dir" ]]; then
+        builtin cd -- "$dir" || return
+        (( $+commands[zoxide] )) && zoxide add "$dir"   # make it a z target
+    fi
+    return $rc
+}
+# git status for every repo under ~/Development at once
+alias gstats='~/.config/myscripts/gstats.sh'
 
 
 # -----------------------------------------------------

@@ -24,6 +24,11 @@
 #   gclone TsoiEn/GoTask                             # owner/repo shorthand
 #   gclone TsoiEn/GoTask mydir --depth 1             # extra args reach git
 #   gclone --dry-run TsoiEn/GoTask                   # print, don't run
+#   gclone --no-cd TsoiEn/GoTask                     # clone, stay put
+#
+# After a successful clone the shell is moved into the new repo. A script
+# cannot cd its parent shell, so the path is written to $GCLONE_CD_FILE and
+# the `gclone` shell function (25-aliases.zsh) cds there once we exit.
 #
 # The input host never matters: whatever you paste is normalized to the
 # scp-like form with the host this directory calls for. Non-GitHub URLs are
@@ -63,7 +68,7 @@ usage() {
   cat <<'EOF'
 gclone — clone a GitHub repo with the identity this directory calls for.
 
-  gclone [--dry-run] <repo> [dest] [git-clone-args...]
+  gclone [--dry-run] [--no-cd] <repo> [dest] [git-clone-args...]
 
   <repo>   git@github.com:owner/repo.git | https://github.com/owner/repo
            | ssh://git@github.com/owner/repo.git | owner/repo
@@ -71,6 +76,8 @@ gclone — clone a GitHub repo with the identity this directory calls for.
 Under ~/Development/Personal the URL is rewritten to the github-personal
 ssh host and the personal user.name/user.email are written into the new
 repo's .git/config. Under ~/Development/Work nothing is changed.
+
+The shell lands in the freshly cloned repo; --no-cd leaves it where it is.
 EOF
 }
 
@@ -185,10 +192,57 @@ takes_value() {
 }
 
 # ---------------------------------------------------------------------------
+# Where will the clone land? (so the caller can be moved into it)
+# ---------------------------------------------------------------------------
+
+# find_dest_arg <start-index> — print the explicit [dest] argument if there is
+# one. Reads main's $args; flags and their separate values are skipped the same
+# way the repo argument is found. Returns 1 when the user gave no dest.
+find_dest_arg() {
+  local i="$1" skip_next=0 arg
+  while [[ $i -lt ${#args[@]} ]]; do
+    arg="${args[$i]}"
+    if [[ $skip_next -eq 1 ]]; then
+      skip_next=0
+    elif takes_value "$arg"; then
+      skip_next=1
+    elif [[ "$arg" != -* ]]; then
+      printf '%s' "$arg"
+      return 0
+    fi
+    i=$((i + 1))
+  done
+  return 1
+}
+
+# default_dest <url> — the directory git would create for <url> on its own:
+# the last path component with any trailing .git removed.
+default_dest() {
+  local base="$1"
+  base="${base%/}"
+  base="${base%/.git}"
+  base="${base##*/}"   # https://host/owner/repo.git, git@host:owner/repo.git
+  base="${base##*:}"   # git@host:repo.git (no slash at all)
+  base="${base%.git}"
+  printf '%s' "$base"
+}
+
+# A bare/mirror clone keeps the .git suffix on the directory it creates.
+is_bare_clone() {
+  local arg
+  for arg in ${args[@]+"${args[@]}"}; do
+    case "$arg" in
+      --bare|--mirror) return 0 ;;
+    esac
+  done
+  return 1
+}
+
+# ---------------------------------------------------------------------------
 # main
 # ---------------------------------------------------------------------------
 main() {
-  local dry_run=0
+  local dry_run=0 no_cd=0
   local args=() arg
   local url="" url_index=-1
 
@@ -197,6 +251,7 @@ main() {
     case "$arg" in
       -h|--help) usage; return 0 ;;
       --dry-run) dry_run=1 ;;
+      --no-cd) no_cd=1 ;;
       *) args[${#args[@]}]="$arg" ;;
     esac
   done
@@ -276,11 +331,32 @@ main() {
 
   local status=0
   "${cmd[@]}" || status=$?
-  if [[ $status -ne 0 && -n "$target_host" ]]; then
-    warn "clone failed — check that ~/.ssh/config has a 'Host $target_host' entry"
-    warn "and that its IdentityFile key is added to the right GitHub account"
+  if [[ $status -ne 0 ]]; then
+    if [[ -n "$target_host" ]]; then
+      warn "clone failed — check that ~/.ssh/config has a 'Host $target_host' entry"
+      warn "and that its IdentityFile key is added to the right GitHub account"
+    fi
+    return $status
   fi
-  return $status
+
+  # Where did it land? The explicit [dest] if given, else git's own default.
+  local dest landed=""
+  dest="$(find_dest_arg $((url_index + 1)) || true)"
+  if [[ -z "$dest" ]]; then
+    dest="$(default_dest "$rewritten")"
+    is_bare_clone && dest="$dest.git"
+  fi
+  [[ -n "$dest" && -d "$dest" ]] && landed="$(cd "$dest" && pwd -P)"
+
+  if [[ -n "$landed" ]]; then
+    info "cloned into $landed"
+    # This process cannot cd the shell that called it; the gclone shell
+    # function reads the path back out of this file and cds there for us.
+    if [[ $no_cd -eq 0 && -n "${GCLONE_CD_FILE:-}" ]]; then
+      printf '%s\n' "$landed" > "$GCLONE_CD_FILE"
+    fi
+  fi
+  return 0
 }
 
 main "$@"

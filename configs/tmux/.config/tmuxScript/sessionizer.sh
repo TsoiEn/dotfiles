@@ -185,12 +185,28 @@ list_live_sessions() {
   tmux list-sessions -F '#{session_name}' 2>/dev/null || true
 }
 
+# Name of the session this client is attached to; empty when we're not
+# running under tmux. Resolved against the current client, which is still
+# the launching client when we're inside a display-popup.
+current_session() {
+  [[ -z "${TMUX:-}" ]] && return 0
+  tmux display-message -p '#{client_session}' 2>/dev/null || true
+}
+
+# The session we're currently sitting in is listed first and is the only row
+# carrying a marker; every other session is just its name.
 emit_session_lines() {
-  local sessions="$1" s
+  local sessions="$1" current sessions_nl s
   [[ -z "$sessions" ]] && return 0
+  current="$(current_session)"
+  sessions_nl=$'\n'"$sessions"$'\n'
+  if [[ -n "$current" && "$sessions_nl" == *$'\n'"$current"$'\n'* ]]; then
+    printf ' ● %s (Current Session)\tsession\t%s\n' "$current" "$current"
+  fi
   while IFS= read -r s; do
     [[ -z "$s" ]] && continue
-    printf ' ● %s (session)\tsession\t%s\n' "$s" "$s"
+    [[ -n "$current" && "$s" == "$current" ]] && continue
+    printf ' ● %s\tsession\t%s\n' "$s" "$s"
   done <<< "$sessions"
 }
 

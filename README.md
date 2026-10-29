@@ -111,7 +111,7 @@ dotfiles/
 | Neovim | `configs/nvim/` | `~/.config/nvim/` | ✅ linked (duplicate plugin specs → Phase 4) |
 | tmux | `configs/tmux/` | `~/.tmux.conf`, `~/.config/tmuxScript/` | ✅ linked + tpm installer |
 | Ghostty | `configs/ghostty/` | `~/.config/ghostty/` | ✅ linked (cask commented out in `brew.txt`) |
-| my scripts | `configs/myscripts/` | `~/.config/myscripts/` | ✅ linked (`gclone` → [wiki/gclone.md](wiki/gclone.md)) |
+| my scripts | `configs/myscripts/` | `~/.config/myscripts/` | ✅ linked (`gclone` → [wiki/gclone.md](wiki/gclone.md), `gstats` → [wiki/gstats.md](wiki/gstats.md)) |
 | git | — | — | ⏳ planned (original spec) |
 
 ## Restoring a backup
@@ -161,4 +161,5 @@ Full installer documentation lives in [`wiki/`](wiki/README.md):
 
 - **Core flow** — [bootstrap](wiki/bootstrap.md) · [OS detection](wiki/os-detection.md) · [setup scripts](wiki/setup-scripts.md)
 - **Mechanics** — [symlinks](wiki/symlinks.md) · [backups](wiki/backups.md) · [logging](wiki/logging.md) · [packages](wiki/packages.md)
+- **Helpers** — [gclone](wiki/gclone.md) · [gstats](wiki/gstats.md)
 - **Guides** — [troubleshooting](wiki/troubleshooting.md) · [development](wiki/development.md)
