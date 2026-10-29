@@ -9,14 +9,17 @@
 #
 # Two views:
 #   SESSIONS view (default, shown when any tmux session already exists) —
-#     lists only live sessions.
+#     lists only live sessions. The preview pane on the right shows a table
+#     of the windows ("tabs") open in the session under the cursor; on a
+#     narrow terminal that pane moves below the list instead.
 #       enter    switch/attach to the highlighted session; if what you typed
 #                matches no row, create a session with that name
 #       ctrl-e   kill the session under the cursor
 #       ctrl-n   jump to the FULL view (the "dashboard"); never creates
 #       esc      quit
 #   FULL view (the dashboard — shown when there are no sessions yet, or via
-#     ctrl-n above) — lists live sessions + zoxide directories.
+#     ctrl-n above) — lists live sessions + zoxide directories. Session rows
+#     preview their open windows; directory rows have no session yet.
 #       enter    open the highlighted session, or create+open one from the
 #                highlighted directory; if what you typed matches no row,
 #                create a session with that name
@@ -39,20 +42,24 @@ POPUP_W="85%"
 POPUP_H="80%"
 POPUP_FLAG="TS_IN_POPUP"
 
-SESSIONS_HEADER="  enter switch (type a name to create) · ctrl-n dashboard · ctrl-e kill · esc quit"
-FULL_HEADER="  enter open/create (type a name to create) · ctrl-e kill · esc quit"
+SESSIONS_HEADER="  enter switch · ctrl-n dashboard · ctrl-e kill · esc quit
+  type a name that matches no row to create it"
+FULL_HEADER="  enter open/create · ctrl-e kill · esc quit
+  type a name that matches no row to create it"
 
 # ---------------------------------------------------------------------------
 # Entry point / dispatch
 # ---------------------------------------------------------------------------
 main() {
-  # --kill / --list / --list-sessions are on the hot path (fired on every
-  # ctrl-e via execute-silent+reload), so skip the realpath resolve there —
+  # --kill / --list / --list-sessions / --preview are on the hot path (fired
+  # on every ctrl-e via execute-silent+reload, and on every cursor move for
+  # the preview), so skip the realpath resolve there —
   # it's only needed to build the self-referencing fzf binds.
   case "${1:-}" in
     --kill)           kill_session "${2:-}"; return ;;
     --list)           build_full_candidates; return ;;
     --list-sessions)  build_sessions_candidates; return ;;
+    --preview)        preview_entry "${2:-}" "${3:-}"; return ;;
   esac
 
   self="$(realpath "${BASH_SOURCE[0]}")"
@@ -140,6 +147,8 @@ run_sessions_view() {
     --prompt "  ts  " \
     --header "$SESSIONS_HEADER" --header-first --layout=reverse --border=rounded \
     --print-query \
+    --preview "\"$self\" --preview {2} {3}" \
+    --preview-window "right,50%,border-left,<70(down,45%,border-top)" \
     --bind "ctrl-e:execute-silent(\"$self\" --kill {3})+reload(\"$self\" --list-sessions)" \
     --bind 'ctrl-n:print(__CTRLN__)+accept')"
   status=$?
@@ -169,6 +178,8 @@ run_full_view() {
     --prompt "  ts  " \
     --header "$FULL_HEADER" --header-first --layout=reverse --border=rounded \
     --print-query \
+    --preview "\"$self\" --preview {2} {3}" \
+    --preview-window "right,50%,border-left,<70(down,45%,border-top)" \
     --bind "ctrl-e:execute-silent(\"$self\" --kill {3})+reload(\"$self\" --list)" \
     --bind 'ctrl-n:ignore')"
   status=$?
@@ -241,6 +252,107 @@ build_full_candidates() {
   sessions_nl=$'\n'"$sessions"$'\n'
   emit_session_lines "$sessions"
   emit_dir_lines "$sessions_nl"
+}
+
+# ---------------------------------------------------------------------------
+# Preview pane
+# ---------------------------------------------------------------------------
+
+# Rendered by fzf for whichever row the cursor is sitting on. Session rows
+# list the windows ("tabs") that session has open; directory rows have no
+# session behind them yet, so there is nothing to list.
+preview_entry() {
+  local type="${1:-}" value="${2:-}"
+  if [[ "$type" == "session" ]]; then
+    preview_session "$value"
+  else
+    preview_dir "$value"
+  fi
+}
+
+# A horizontal rule N columns wide, with no subprocess: pad with spaces
+# (always single-byte) and swap each one for a box-drawing character.
+hrule() {
+  local n="$1" pad
+  [[ "$n" -lt 1 ]] && return 0
+  printf -v pad '%*s' "$n" ''
+  printf '%s' "${pad// /─}"
+}
+
+# $HOME -> ~ so paths stand a chance of fitting the preview pane.
+tildify() {
+  local p="$1"
+  if [[ -n "${HOME:-}" && "$p" == "$HOME" ]]; then
+    p="~"
+  elif [[ -n "${HOME:-}" && "$p" == "$HOME"/* ]]; then
+    p="~${p#"$HOME"}"
+  fi
+  printf '%s' "$p"
+}
+
+# Window count + attached state for a session, as "<count>\t<state>". Pulled
+# out of a single list-sessions pass and matched in bash — a `list-sessions -f`
+# filter would choke on a session name containing format metacharacters.
+session_stats() {
+  local name="$1" fmt row_name row_windows row_attached
+  fmt="#{session_name}"$'\t'"#{session_windows}"$'\t'"#{?session_attached,attached,detached}"
+  while IFS=$'\t' read -r row_name row_windows row_attached; do
+    if [[ "$row_name" == "$name" ]]; then
+      printf '%s\t%s' "$row_windows" "$row_attached"
+      return 0
+    fi
+  done <<< "$(tmux list-sessions -F "$fmt" 2>/dev/null || true)"
+}
+
+preview_session() {
+  local name="$1" fmt windows count attached cols
+  fmt="#{window_active}"$'\t'"#{window_index}"$'\t'"#{window_name}"$'\t'
+  fmt="$fmt#{window_panes}"$'\t'"#{pane_current_path}"
+  windows="$(tmux list-windows -t "=$name" -F "$fmt" 2>/dev/null || true)"
+
+  if [[ -z "$windows" ]]; then
+    printf '\033[1m %s\033[0m \033[2m· session is gone\033[0m\n' "$name"
+    return 0
+  fi
+
+  # Title line: name · N windows · attached
+  IFS=$'\t' read -r count attached <<< "$(session_stats "$name")" || true
+  printf '\033[1m %s\033[0m' "$name"
+  if [[ -n "$count" ]]; then
+    printf ' \033[2m· %s window' "$count"
+    [[ "$count" == "1" ]] || printf 's'
+    printf '\033[0m'
+  fi
+  if [[ -n "$attached" ]]; then
+    printf ' \033[2m· %s\033[0m' "$attached"
+  fi
+  printf '\n\n'
+
+  # Table head + rule. Columns are: active marker (1), index (3), name (18),
+  # panes (5), cwd (whatever is left of the preview width) — 33 columns of
+  # that are fixed, so the cwd rule gets the remainder.
+  printf '\033[2m   %-3s %-18s %5s  %s\033[0m\n' '#' 'name' 'panes' 'cwd'
+  cols="${FZF_PREVIEW_COLUMNS:-80}"
+  printf '\033[2m   %s %s %s  %s\033[0m\n' \
+    "$(hrule 3)" "$(hrule 18)" "$(hrule 5)" "$(hrule $(( cols > 43 ? cols - 33 : 10 )))"
+
+  local active idx wname panes cpath
+  while IFS=$'\t' read -r active idx wname panes cpath; do
+    [[ -z "$idx" ]] && continue
+    if [[ "$active" == "1" ]]; then
+      printf ' \033[32m●\033[0m \033[1m%-3s %-18.18s\033[0m %5s  \033[2m%s\033[0m\n' \
+        "$idx" "$wname" "$panes" "$(tildify "$cpath")"
+    else
+      printf '   %-3s %-18.18s %5s  \033[2m%s\033[0m\n' \
+        "$idx" "$wname" "$panes" "$(tildify "$cpath")"
+    fi
+  done <<< "$windows"
+}
+
+preview_dir() {
+  local path="$1"
+  printf '\033[1m %s\033[0m\n' "$(tildify "$path")"
+  printf ' \033[2mno session yet — enter creates one here\033[0m\n'
 }
 
 # ---------------------------------------------------------------------------
