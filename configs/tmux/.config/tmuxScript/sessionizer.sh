@@ -9,21 +9,21 @@
 #
 # Two views:
 #   SESSIONS view (default, shown when any tmux session already exists) —
-#     lists only live sessions. The preview pane on the right shows a table
-#     of the windows ("tabs") open in the session under the cursor; on a
-#     narrow terminal that pane moves below the list instead.
+#     lists only live sessions. The preview pane below the list shows a
+#     table of the windows ("tabs") open in the session under the cursor.
 #       enter    switch/attach to the highlighted session; if what you typed
 #                matches no row, create a session with that name
 #       ctrl-e   kill the session under the cursor
 #       ctrl-n   jump to the FULL view (the "dashboard"); never creates
 #       esc      quit
 #   FULL view (the dashboard — shown when there are no sessions yet, or via
-#     ctrl-n above) — lists live sessions + zoxide directories. Session rows
-#     preview their open windows; directory rows have no session yet.
-#       enter    open the highlighted session, or create+open one from the
-#                highlighted directory; if what you typed matches no row,
-#                create a session with that name
-#       ctrl-e   kill the session under the cursor
+#     ctrl-n above) — lists zoxide directories only, with no preview pane.
+#     Live sessions are the SESSIONS view's job, so none are listed here;
+#     this view is purely for starting a session somewhere new.
+#       enter    create+open a session from the highlighted directory; if
+#                what you typed matches no row, create a session with that
+#                name instead
+#       ctrl-e   not applicable (nothing here to kill)
 #       ctrl-n   not applicable (ignored)
 #       esc      quit
 #
@@ -44,7 +44,7 @@ POPUP_FLAG="TS_IN_POPUP"
 
 SESSIONS_HEADER="  enter switch · ctrl-n dashboard · ctrl-e kill · esc quit
   type a name that matches no row to create it"
-FULL_HEADER="  enter open/create · ctrl-e kill · esc quit
+FULL_HEADER="  enter open/create · esc quit
   type a name that matches no row to create it"
 
 # ---------------------------------------------------------------------------
@@ -148,7 +148,7 @@ run_sessions_view() {
     --header "$SESSIONS_HEADER" --header-first --layout=reverse --border=rounded \
     --print-query \
     --preview "\"$self\" --preview {2} {3}" \
-    --preview-window "right,50%,border-left,<70(down,45%,border-top)" \
+    --preview-window "down,50%,border-top" \
     --bind "ctrl-e:execute-silent(\"$self\" --kill {3})+reload(\"$self\" --list-sessions)" \
     --bind 'ctrl-n:print(__CTRLN__)+accept')"
   status=$?
@@ -158,29 +158,24 @@ run_sessions_view() {
 }
 
 # ---------------------------------------------------------------------------
-# FULL view (sessions + zoxide directories)
+# FULL view (zoxide directories)
 # ---------------------------------------------------------------------------
 run_full_view() {
   local candidates
   candidates="$(build_full_candidates)"
 
-  if [[ -z "$candidates" ]]; then
-    echo "No zoxide entries yet. Run 'zoxide add <path>' or 'cd' around a bit first."
-    read -n 1 -s -r -p "press any key to close"
-    return
-  fi
-
+  # An empty list is not a dead end: the header still invites a name, and
+  # enter-with-no-match creates a session from it, so fall through to the
+  # picker. Feed fzf nothing at all in that case — printf would emit a lone
+  # blank line, which fzf would show as a phantom row.
   local out status
 
   set +e
-  out="$(printf '%s\n' "$candidates" | fzf \
+  out="$({ [[ -n "$candidates" ]] && printf '%s\n' "$candidates"; } | fzf \
     --ansi --delimiter '\t' --with-nth=1 \
     --prompt "  ts  " \
     --header "$FULL_HEADER" --header-first --layout=reverse --border=rounded \
-    --print-query \
-    --preview "\"$self\" --preview {2} {3}" \
-    --preview-window "right,50%,border-left,<70(down,45%,border-top)" \
-    --bind "ctrl-e:execute-silent(\"$self\" --kill {3})+reload(\"$self\" --list)" \
+    --print-query --no-preview \
     --bind 'ctrl-n:ignore')"
   status=$?
   set -e
@@ -246,11 +241,13 @@ build_sessions_candidates() {
   emit_session_lines "$sessions"
 }
 
+# Directories only — live sessions belong to the SESSIONS view. A directory
+# whose derived name already has a session is skipped, so no row here is a
+# session you could have switched to from the other view.
 build_full_candidates() {
   local sessions sessions_nl
   sessions="$(list_live_sessions)"
   sessions_nl=$'\n'"$sessions"$'\n'
-  emit_session_lines "$sessions"
   emit_dir_lines "$sessions_nl"
 }
 
@@ -258,9 +255,10 @@ build_full_candidates() {
 # Preview pane
 # ---------------------------------------------------------------------------
 
-# Rendered by fzf for whichever row the cursor is sitting on. Session rows
-# list the windows ("tabs") that session has open; directory rows have no
-# session behind them yet, so there is nothing to list.
+# Rendered by fzf for whichever row the cursor is sitting on. Only the
+# SESSIONS view has a preview pane, so in practice this is always a session
+# row listing the windows ("tabs") that session has open; the directory
+# branch stays as a fallback.
 preview_entry() {
   local type="${1:-}" value="${2:-}"
   if [[ "$type" == "session" ]]; then
@@ -377,11 +375,13 @@ open_line() {
   attach_or_switch "$session_name"
 }
 
-# The directory the popup/picker was launched from — used as the starting
-# directory for a brand-new, name-only session (no path involved).
+# Starting directory for a brand-new, name-only session (no path involved).
+# Deliberately $HOME rather than the directory the popup was launched from: a
+# session named after something you just typed has no path of its own, so it
+# starts at the root of your home instead of inheriting an unrelated cwd.
 start_dir() {
-  if [[ -n "${TMUX:-}" ]]; then
-    tmux display-message -p '#{pane_current_path}' 2>/dev/null || echo "$PWD"
+  if [[ -n "${HOME:-}" && -d "$HOME" ]]; then
+    echo "$HOME"
   else
     echo "$PWD"
   fi
