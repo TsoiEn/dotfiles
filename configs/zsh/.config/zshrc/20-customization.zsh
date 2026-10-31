@@ -8,21 +8,31 @@ plugins=(
     git
     sudo
     web-search
-    archlinux
     zsh-autosuggestions
-    zsh-syntax-highlighting
     fast-syntax-highlighting
     copyfile
     copybuffer
     dirhistory
 )
 
-source "$ZSH/oh-my-zsh.sh"
+# zsh-syntax-highlighting is deliberately absent: it and
+# fast-syntax-highlighting both wrap ZLE's highlighting hooks, so loading both
+# highlighted every line twice. Swap the two names here to go back.
+
+# archlinux only wraps pacman/yay, which do not exist on macOS.
+[[ "$OSTYPE" == linux* ]] && plugins+=(archlinux)
+
+# Guarded so a machine that has not run bootstrap.sh yet still gets a shell.
+if [[ -r "$ZSH/oh-my-zsh.sh" ]]; then
+    source "$ZSH/oh-my-zsh.sh"
+fi
 
 # -----------------------------------------------------
 # FZF
 # -----------------------------------------------------
-source <(fzf --zsh)
+if (( $+commands[fzf] )); then
+    source <(fzf --zsh)
+fi
 
 # -----------------------------------------------------
 # History
@@ -44,4 +54,3 @@ function y() {
 	[ "$cwd" != "$PWD" ] && [ -d "$cwd" ] && builtin cd -- "$cwd"
 	command rm -f -- "$tmp"
 }
-

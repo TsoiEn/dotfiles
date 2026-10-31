@@ -44,7 +44,7 @@ Symlink map — 7 directory-level targets:
 
 Also included: physical-path canonicalization (idempotent even through symlinked repo paths), validate-first ordering (a broken repo never half-links `$HOME`), and a test suite of **50+ checks** (sandboxed end-to-end runs, stubbed package managers, tripwires against the live machine).
 
-**Not yet fixed** — known config bugs (zsh hardcoded paths, duplicate nvim plugin specs) are tracked in the roadmap below.
+**Not yet fixed** — known config bugs (duplicate nvim plugin specs) are tracked in the roadmap below.
 
 ## Quick start
 
@@ -107,7 +107,7 @@ dotfiles/
 
 | App | Repo path | Target | Status |
 |---|---|---|---|
-| zsh | `configs/zsh/` | `~/.zshrc`, `~/.config/zshrc/` | ✅ linked (known path bugs → Phase 3) |
+| zsh | `configs/zsh/` | `~/.zshrc`, `~/.config/zshrc/` | ✅ linked |
 | Neovim | `configs/nvim/` | `~/.config/nvim/` | ✅ linked (duplicate plugin specs → Phase 4) |
 | tmux | `configs/tmux/` | `~/.tmux.conf`, `~/.config/tmuxScript/` | ✅ linked + tpm installer |
 | Ghostty | `configs/ghostty/` | `~/.config/ghostty/` | ✅ linked (cask commented out in `brew.txt`) |
@@ -149,7 +149,7 @@ No — only Arch Linux and macOS are detected; anything else aborts with `Unsupp
 ## Roadmap
 
 - **Phase 2** — `.gitignore` (`logs/`, `backups/`, `.DS_Store`)
-- **Phase 3** — zsh fixes: guard hardcoded macOS paths, dedupe init, drop conflicting plugins, install oh-my-zsh
+- ~~**Phase 3** — zsh fixes: guard hardcoded macOS paths, dedupe init, drop conflicting plugins, install oh-my-zsh~~ ✅ done
 - **Phase 4** — Neovim fixes: merge duplicate `conform.nvim` specs, align Mason ↔ linter tool lists
 - **Phase 5** — dedupe `install/arch.sh` + `install/macos.sh`, batch package installs, `--skip-packages` flag
 - **Phase 6** — shellcheck + shfmt CI

@@ -15,21 +15,19 @@ alias vim='$EDITOR'
 # -----------------------------------------------------
 # ZOXIDE
 # -----------------------------------------------------
-# zoxide initialization
-eval "$(zoxide init zsh)"
-
-# aliases
-alias cd="z"        # replace cd with zoxide
-alias cdi="zi"      # interactive selection
-
-# optional settings
+# These are read by the zoxide binary, so they are set before init.
 export _ZO_ECHO=1          # print directory after jump
 export _ZO_RESOLVE_SYMLINKS=1
 export _ZO_DATA_DIR="$HOME/.local/share/zoxide"
 
-# completions (optional)
-autoload -Uz compinit
-compinit
+# --cmd cd installs `cd` and `cdi` as functions that fall back to the builtin,
+# so `cd -`, `cd ..` and plain paths keep behaving normally. The previous
+# `alias cd=z` shadowed the builtin outright.
+eval "$(zoxide init zsh --cmd cd)"
+
+# compinit is not called here: oh-my-zsh already runs it (with its own
+# ~/.zcompdump-<host>-<version> cache) before this file is sourced, and the
+# second call was writing a stray ~/.zcompdump on every start.
 
 # -----------------------------------------------------
 # MyAliases
