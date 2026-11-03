@@ -8,7 +8,7 @@ Documentation for how the installer works, how to operate it, and how to extend 
 |---|---|
 | [bootstrap.md](bootstrap.md) | Entry point: env setup, ordering, failure propagation, env vars |
 | [os-detection.md](os-detection.md) | How `detect_os` decides `arch` vs `macos`, and what happens otherwise |
-| [setup-scripts.md](setup-scripts.md) | The per-app checks: nvim, tmux (tpm), Ghostty — and their best-effort philosophy |
+| [setup-scripts.md](setup-scripts.md) | The per-app checks: nvim, tmux (tpm), Ghostty, Claude Code — and their best-effort philosophy |
 
 ## Mechanics
 
@@ -20,6 +20,8 @@ Documentation for how the installer works, how to operate it, and how to extend 
 | [packages.md](packages.md) | Package list format, pacman/paru/brew install loops, known gaps |
 | [gclone.md](gclone.md) | The `gclone` helper: per-directory GitHub identity for `git clone` |
 | [gstats.md](gstats.md) | The `gstats` helper: one `git status` across every repo under `~/Development` |
+| [git.md](git.md) | The global ignore file: why `commit.md` is excluded machine-wide instead of per repo |
+| [claude.md](claude.md) | Global Claude Code config: the fan-out link into `~/.claude`, plugins, fencing them out of 99, adding a skill, `commit-log` |
 
 ## Guides
 

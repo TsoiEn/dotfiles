@@ -47,5 +47,6 @@ bash "$DOTFILES_ROOT/scripts/setup-symlinks.sh"
 bash "$DOTFILES_ROOT/scripts/setup-nvim.sh"
 bash "$DOTFILES_ROOT/scripts/setup-tmux.sh"
 bash "$DOTFILES_ROOT/scripts/setup-ghostty.sh"
+bash "$DOTFILES_ROOT/scripts/setup-claude.sh"
 
 log_success "Bootstrap complete"

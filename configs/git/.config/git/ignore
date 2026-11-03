@@ -1,0 +1,14 @@
+# ---------------------------------------------------------------------------
+# Global git ignores — linked to ~/.config/git/ignore, which is git's default
+# excludes file ($XDG_CONFIG_HOME/git/ignore) when core.excludesFile is unset.
+#
+# This applies to EVERY repo on the machine, including other people's, so only
+# patterns that are never a repo's real content belong here.
+#
+# commit.md is written by the global commit-log skill
+# (configs/claude/.claude/skills/commit-log/SKILL.md): one proposed commit
+# message for the current branch, scratch by definition. Ignoring it here
+# keeps it out of every repo without editing anyone's .gitignore.
+# Escape hatch, in a repo where the file is real content: git add -f commit.md
+# ---------------------------------------------------------------------------
+commit.md

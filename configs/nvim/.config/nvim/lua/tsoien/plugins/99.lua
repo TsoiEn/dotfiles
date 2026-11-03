@@ -13,6 +13,24 @@ return {
 				-- the provider default is claude-sonnet-4-5; "sonnet" also works
 				model = "claude-sonnet-5-5",
 
+				-- Claude Code plugins are enabled at user scope in
+				-- ~/.claude/settings.json, and this provider shells out to that same
+				-- CLI, so 99 inherits them. Wrong contract: 99 pastes the model's temp
+				-- file straight over the selection with nobody reviewing it, so a
+				-- plugin hook or a skill that adds prose corrupts the buffer. The
+				-- settings file disables them for 99 only, and is generated from
+				-- PLUGINS in the dotfiles' scripts/setup-claude.sh.
+				--
+				-- Guarded because `claude --settings <missing>` is a hard error: on a
+				-- machine where bootstrap has not run yet, pass no flag at all.
+				provider_extra_args = (function()
+					local fence = vim.fn.expand("~/.config/99/claude-settings.json")
+					if vim.uv.fs_stat(fence) then
+						return { "--settings", fence }
+					end
+					return {}
+				end)(),
+
 				logger = {
 					level = _99.DEBUG,
 					type = "file",

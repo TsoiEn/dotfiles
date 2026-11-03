@@ -14,7 +14,7 @@ Design goals:
 - **Fully logged** — bootstrap and every child script write to one shared log file.
 - **Fail loudly, degrade politely** — a broken repo aborts *before* touching `$HOME`; optional extras (plugins, GUI apps) warn instead of failing.
 
-Manages: **zsh**, **Neovim**, **tmux**, **Ghostty** — 33 config files.
+Manages: **zsh**, **Neovim**, **tmux**, **Ghostty**, **Claude Code** — 33 config files.
 
 ## What's new — Phase 1
 
@@ -25,12 +25,12 @@ The installer previously referenced a `scripts/` directory that did not exist, s
 | `scripts/utils.sh` | Logging (`log_init`, `log_info/…`), `die`, `ensure_dir`, `command_exists`, `require_command`, `run_as_root` |
 | `scripts/detect-os.sh` | `detect_os` → `arch` \| `macos` (uname → os-release → pacman fallback) |
 | `scripts/backup.sh` | `backup_path` — moves existing configs into a timestamped session, `$HOME`-scoped safety rails |
-| `scripts/setup-symlinks.sh` | Links all 6 targets (validates every source first, then backs up + links) |
+| `scripts/setup-symlinks.sh` | Links all 8 targets (validates every source first, then backs up + links) |
 | `scripts/setup-tmux.sh` | Installs tpm + plugins (best effort; not in any package list) |
 | `scripts/setup-nvim.sh` | Verifies config wiring + lazy.nvim state; optional `SETUP_NVIM_SYNC=1` |
 | `scripts/setup-ghostty.sh` | Detects Ghostty (CLI or app bundle) + verifies config link |
 
-Symlink map — 7 directory-level targets:
+Symlink map — 8 targets (directory-level, plus two single files):
 
 | Source | Target |
 |---|---|
@@ -41,6 +41,7 @@ Symlink map — 7 directory-level targets:
 | `configs/tmux/.config/tmuxScript` | `~/.config/tmuxScript` |
 | `configs/ghostty/.config/ghostty` | `~/.config/ghostty` |
 | `configs/myscripts/.config/myscripts` | `~/.config/myscripts` |
+| `configs/git/.config/git/ignore` | `~/.config/git/ignore` |
 
 Also included: physical-path canonicalization (idempotent even through symlinked repo paths), validate-first ordering (a broken repo never half-links `$HOME`), and a test suite of **50+ checks** (sandboxed end-to-end runs, stubbed package managers, tripwires against the live machine).
 
@@ -54,7 +55,7 @@ cd ~/.dotfiles
 ./bootstrap.sh
 ```
 
-**First run:** detects the OS → installs missing packages from `install/packages/*.txt` → links the 6 targets (anything already at those paths is moved to `backups/<timestamp>/`) → runs the per-app setup checks. Read the run's log at `logs/bootstrap-<timestamp>.log`.
+**First run:** detects the OS → installs missing packages from `install/packages/*.txt` → links the 8 targets (anything already at those paths is moved to `backups/<timestamp>/`) → runs the per-app setup checks. Read the run's log at `logs/bootstrap-<timestamp>.log`.
 
 **Re-run:** safe at any time — installed packages are skipped, correct links are reported as `already linked`, and no new backup session is created if there is nothing to back up.
 
@@ -71,7 +72,8 @@ bootstrap.sh
     ├── setup-symlinks.sh   backup existing → ln -s ×6
     ├── setup-nvim.sh       verify config + lazy.nvim state
     ├── setup-tmux.sh       install tpm + plugins (best effort)
-    └── setup-ghostty.sh    detect app + verify config link
+    ├── setup-ghostty.sh    detect app + verify config link
+    └── setup-claude.sh     fan-out link ~/.claude config + install plugins
 ```
 
 Details: [wiki/bootstrap.md](wiki/bootstrap.md).
@@ -81,6 +83,7 @@ Details: [wiki/bootstrap.md](wiki/bootstrap.md).
 ```
 dotfiles/
 ├── bootstrap.sh              # entry point
+├── .gitignore                # runtime output, secrets, OS/editor scratch
 ├── install/
 │   ├── arch.sh               # pacman/paru
 │   ├── macos.sh              # homebrew
@@ -95,9 +98,10 @@ dotfiles/
 │   ├── setup-symlinks.sh
 │   ├── setup-tmux.sh
 │   ├── setup-nvim.sh
-│   └── setup-ghostty.sh
+│   ├── setup-ghostty.sh
+│   └── setup-claude.sh
 ├── configs/                  # mirrored tree, symlinked into $HOME
-│   ├── zsh/  nvim/  tmux/  ghostty/  myscripts/
+│   ├── zsh/  nvim/  tmux/  ghostty/  myscripts/  claude/  git/
 ├── wiki/                     # installer documentation
 ├── logs/                     # generated at runtime (not tracked)
 └── backups/                  # generated at runtime (not tracked)
@@ -112,7 +116,8 @@ dotfiles/
 | tmux | `configs/tmux/` | `~/.tmux.conf`, `~/.config/tmuxScript/` | ✅ linked + tpm installer |
 | Ghostty | `configs/ghostty/` | `~/.config/ghostty/` | ✅ linked (cask commented out in `brew.txt`) |
 | my scripts | `configs/myscripts/` | `~/.config/myscripts/` | ✅ linked (`gclone` → [wiki/gclone.md](wiki/gclone.md), `gstats` → [wiki/gstats.md](wiki/gstats.md)) |
-| git | — | — | ⏳ planned (original spec) |
+| Claude Code | `configs/claude/` | `~/.claude/CLAUDE.md`, `~/.claude/skills/*`, plugins | ✅ linked + plugins ([wiki/claude.md](wiki/claude.md)) |
+| git | `configs/git/` | `~/.config/git/ignore` | ✅ global ignore linked ([wiki/git.md](wiki/git.md)); `.gitconfig` still ⏳ planned |
 
 ## Restoring a backup
 
@@ -143,12 +148,14 @@ Run only the setup scripts directly, e.g. `bash scripts/setup-symlinks.sh` — e
 **How do I add a config?**
 Add it under `configs/` following the existing layout, then add one line to `LINK_MAP` in `scripts/setup-symlinks.sh`. See [wiki/symlinks.md](wiki/symlinks.md).
 
+**Where do I put machine-specific values or secrets?**
+`~/.config/zshrc/custom/` — `.zshrc` sources `custom/*.zsh` after the numbered files, so it can override anything. That path is this repo through the symlink, and `.gitignore` excludes it, so a host's tokens stay local. Example: `configs/zsh/.config/zshrc/custom/90-secrets.zsh`.
+
 **Windows support?**
 No — only Arch Linux and macOS are detected; anything else aborts with `Unsupported OS`.
 
 ## Roadmap
 
-- **Phase 2** — `.gitignore` (`logs/`, `backups/`, `.DS_Store`)
 - **Phase 3** — zsh fixes: guard hardcoded macOS paths, dedupe init, drop conflicting plugins, install oh-my-zsh
 - **Phase 4** — Neovim fixes: merge duplicate `conform.nvim` specs, align Mason ↔ linter tool lists
 - **Phase 5** — dedupe `install/arch.sh` + `install/macos.sh`, batch package installs, `--skip-packages` flag
@@ -161,5 +168,5 @@ Full installer documentation lives in [`wiki/`](wiki/README.md):
 
 - **Core flow** — [bootstrap](wiki/bootstrap.md) · [OS detection](wiki/os-detection.md) · [setup scripts](wiki/setup-scripts.md)
 - **Mechanics** — [symlinks](wiki/symlinks.md) · [backups](wiki/backups.md) · [logging](wiki/logging.md) · [packages](wiki/packages.md)
-- **Helpers** — [gclone](wiki/gclone.md) · [gstats](wiki/gstats.md)
+- **Helpers** — [gclone](wiki/gclone.md) · [gstats](wiki/gstats.md) · [Claude Code config](wiki/claude.md)
 - **Guides** — [troubleshooting](wiki/troubleshooting.md) · [development](wiki/development.md)

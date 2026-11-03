@@ -1,6 +1,6 @@
 # Setup scripts
 
-Three per-app checks run after symlinking. All share one philosophy: **report problems, never fail bootstrap** — packages, symlinks and backups are already done by the time they run, so a missing optional tool must not undo that. (The one exception: `setup-symlinks.sh` — see [symlinks.md](symlinks.md).)
+Four per-app scripts run after symlinking. All share one philosophy: **report problems, never fail bootstrap** — packages, symlinks and backups are already done by the time they run, so a missing optional tool must not undo that. (The one exception: `setup-symlinks.sh` — see [symlinks.md](symlinks.md).)
 
 ## setup-nvim.sh
 
@@ -60,3 +60,24 @@ Config check happens on **all** platforms at the directory level (`~/.config/gho
 - [bootstrap.md](bootstrap.md) — where they run in the sequence
 - [packages.md](packages.md) — what the install step does *not* provide
 - [troubleshooting.md](troubleshooting.md) — interpreting their warnings
+
+## setup-claude.sh
+
+Links the repo's global Claude Code config into `~/.claude`, and is the one setup script that **creates** symlinks rather than verifying them — `~/.claude` can't be a `LINK_MAP` entry because it mixes authored config with machine-local runtime state, and because `skills/` also holds plugin-managed content.
+
+It links a fan-out: each child of `configs/claude/.claude/skills/`, `agents/` and `commands/` individually, plus `CLAUDE.md`. Adding a skill therefore needs no edit to this script.
+
+Then a second phase installs the plugins listed in the script's `PLUGINS` array, via `claude plugin marketplace add` and `claude plugin install`. Plugins can't be symlinked — they are git clones recorded in a machine-local `settings.json` — so the repo keeps the list and the CLI reproduces the state.
+
+| Check | Output |
+|---|---|
+| `claude` not on PATH | warn, **link anyway** (plugins skipped) |
+| `configs/claude/.claude` missing | `die` — repo incomplete |
+| entry already links into this repo | `already linked: …` |
+| something else at the target | `backup_path`, then link |
+| fan-out dir empty (just `.gitkeep`) | contributes nothing, not an error |
+| plugin or marketplace fails (offline) | warn, continue — never fatal |
+
+Unlike the three checks above, the **link** phase follows `setup-symlinks.sh`'s contract instead of the best-effort one: all sources are validated before anything in `~/.claude` is touched, and a failed link is fatal. The **plugin** phase is best-effort, since it needs network. Override the target with `CLAUDE_HOME`, and skip plugins with `DOTFILES_SKIP_PLUGINS=1`.
+
+Full details: [claude.md](claude.md).
