@@ -1,41 +1,4 @@
 #!/usr/bin/env bash
-#
-# sessionizer.sh — a telescope/lazygit-style tmux session picker
-#
-# Written to run on bash 3.2 (macOS's stock /bin/bash) as well as modern
-# bash — no associative arrays, no bash-4+-only builtins.
-#
-# Backed by fzf + zoxide. Typing always filters the list (no modes).
-#
-# Two views:
-#   SESSIONS view (default, shown when any tmux session already exists) —
-#     lists only live sessions. The preview pane below the list shows a
-#     table of the windows ("tabs") open in the session under the cursor.
-#       enter    switch/attach to the highlighted session; if what you typed
-#                matches no row, create a session with that name
-#       ctrl-e   kill the session under the cursor
-#       ctrl-n   jump to the FULL view (the "dashboard"); never creates
-#       esc      quit
-#   FULL view (the dashboard — shown when there are no sessions yet, or via
-#     ctrl-n above) — lists zoxide directories only, with no preview pane.
-#     Live sessions are the SESSIONS view's job, so none are listed here;
-#     this view is purely for starting a session somewhere new.
-#       enter    create+open a session from the highlighted directory; if
-#                what you typed matches no row, create a session with that
-#                name instead
-#       ctrl-e   not applicable (nothing here to kill)
-#       ctrl-n   not applicable (ignored)
-#       esc      quit
-#
-# Requires: tmux, fzf, zoxide
-#
-# Install:
-#   cp sessionizer.sh ~/.local/bin/ts && chmod +x ~/.local/bin/ts
-#   (make sure ~/.local/bin is on your PATH)
-#
-# Optional tmux.conf binding (e.g. prefix + f):
-#   bind-key f run-shell "~/.local/bin/ts"
-#
 set -euo pipefail
 
 POPUP_W="85%"

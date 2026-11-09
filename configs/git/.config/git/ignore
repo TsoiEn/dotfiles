@@ -12,3 +12,6 @@
 # Escape hatch, in a repo where the file is real content: git add -f commit.md
 # ---------------------------------------------------------------------------
 commit.md
+plan.md
+graphify-out/
+.gitattributes

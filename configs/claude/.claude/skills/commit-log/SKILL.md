@@ -36,16 +36,28 @@ Whenever code changes are made:
 
 1. `git rev-parse --abbrev-ref HEAD` — identify the current branch.
 2. Review the branch's changes as a whole: `git diff $(git merge-base HEAD <default-branch>)...HEAD`
-   plus the working tree. The entry describes the **branch's purpose**, not the
-   last edit.
+   plus the working tree — read that with `git status --short`, not `git diff`
+   alone: a brand-new file is untracked, so a plain diff shows none of it, and a
+   whole new module or test file is exactly what the entry must not miss. A file
+   `git check-ignore` claims (commonly `commit.md` itself, via a global ignore)
+   is not part of the entry. The entry describes the **branch's purpose**, not
+   the last edit — narrowed by step 4 if the recorded entry was already
+   committed.
 3. Read the existing `commit.md`, if present.
-4. If its entry belongs to the current branch → **update it in place**.
-5. If it belongs to another branch → **replace the whole file** with the current
+4. If its entry belongs to the current branch, check whether that entry was
+   already committed: `git log --pretty=%s -40 | grep -Fxn '<recorded title>'`
+   (match the title without the backticks). A hit means the entry is spent →
+   **replace it with a fresh entry** describing only the work since that
+   commit: `git log --oneline <that sha>..HEAD` plus the working tree. If
+   nothing has changed since, say the entry is already committed and leave the
+   file untouched.
+5. Otherwise the entry is still pending → **update it in place**.
+6. If it belongs to another branch → **replace the whole file** with the current
    branch's entry. Never append a second branch.
-6. Consolidate related changes into one title and description.
-7. Verify the title and description reflect what is actually implemented —
+7. Consolidate related changes into one title and description.
+8. Verify the title and description reflect what is actually implemented —
    not what was planned, attempted, or discussed.
-8. Confirm the file holds exactly one entry and meets the length guidelines.
+9. Confirm the file holds exactly one entry and meets the length guidelines.
 
 Document only implemented changes. If the work isn't in the tree, it isn't in
 `commit.md`.
@@ -99,7 +111,8 @@ guess it.
 - Exactly one proposed commit message per current branch in `commit.md`.
 - Replace the previous branch's entry when switching; never append.
 - **Do not create Git commits automatically.** Commit only when explicitly asked.
-- When asked to commit, use the consolidated title recorded in `commit.md`.
+- When asked to commit, use the consolidated title recorded in `commit.md`,
+  verbatim, so the next run can recognize it as already committed.
 - Before committing, verify the title and description match the intended change.
 - Do not add a `Co-Authored-By` trailer for yourself.
 
