@@ -1,6 +1,6 @@
 # git
 
-One file so far: `configs/git/.config/git/ignore`, linked to `~/.config/git/ignore` by [`setup-symlinks.sh`](symlinks.md). Identity (`user.name`, `user.email`) is **not** here — [`gclone`](gclone.md) sets it per directory instead.
+Two files, both linked by [`setup-symlinks.sh`](symlinks.md): `configs/git/.config/git/ignore` → `~/.config/git/ignore`, and `configs/git/.gitconfig` → `~/.gitconfig`. Identity (`user.name`, `user.email`) is in **neither** — [`gclone`](gclone.md) sets it per directory instead.
 
 ## What it is
 
@@ -34,13 +34,34 @@ The same applies to any pattern added here later — the bar for this file is "n
 
 ## Caveat: `core.excludesFile`
 
-The XDG path is only the default. If a machine has
+The XDG path is only the default: whatever `git config --get core.excludesFile` prints is what git actually reads, and `~/.config/git/ignore` is then silently dead. This is why `.gitconfig` sets it explicitly — but a machine with the value in a *higher*-precedence place (a repo's own config, `GIT_CONFIG_GLOBAL`) still wins, so on a machine where the link looks right but nothing is ignored, check that first.
 
-```bash
-git config --get core.excludesFile
+## `~/.gitconfig`
+
+Three lines of config and no identity:
+
+```ini
+[core]
+	excludesFile = ~/.config/git/ignore
+[init]
+	defaultBranch = main
+[include]
+	path = ~/.config/git/local
 ```
 
-print anything, git reads **that** file and `~/.config/git/ignore` is silently dead. Nothing in the installer checks this (a `setup-git.sh` for one ignore line is not worth it), so on a machine where the link looks right but nothing is ignored, check that first.
+- **`excludesFile`** — makes the ignore file above authoritative instead of merely the default (see the caveat).
+- **`defaultBranch`** — `main`, so a fresh `git init` matches what every remote here uses.
+- **`include`** — `~/.config/git/local` is untracked and absent on a fresh machine, which git ignores silently. It is where machine-local settings belong: a credential helper, a signing key, or a fallback identity.
+
+Two consequences worth knowing:
+
+1. **An existing `~/.gitconfig` is moved into `backups/<timestamp>/` on the first run** — nothing is deleted, but a machine-wide identity that lived there stops applying. Copy what you still want into `~/.config/git/local`:
+   ```bash
+   cat backups/<timestamp>/.gitconfig >> ~/.config/git/local
+   ```
+2. **`git config --global …` now writes into this repo**, because `~/.gitconfig` is a symlink to it. That is the point — the setting becomes a tracked change — but identity and tokens must go to `~/.config/git/local` instead, or they end up in a commit.
+
+Identity stays out on purpose: [`gclone`](gclone.md) sets `user.name`/`user.email` per clone from the directory tree it lands in (Personal vs Work), which a global value would only mask.
 
 ## Verifying
 

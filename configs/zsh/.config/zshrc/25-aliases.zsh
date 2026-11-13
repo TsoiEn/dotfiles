@@ -64,17 +64,7 @@ unalias gclone 2>/dev/null
 }
 # git status for every repo under ~/Development at once
 alias gstats='~/.config/myscripts/gstats.sh'
+# which package manager installed this — and which one can install it
+alias pkg='~/.config/myscripts/pkg.sh'
 
 
-# -----------------------------------------------------
-# Work
-# -----------------------------------------------------
-alias cps="~/Development/Work/frontend-monorepo/apps/app-e2e/scripts/run-e2e-staging.sh"
-alias startwork='~/Development/setup.sh'
-
-devstart() {
-    git pull &&
-    ./service.sh setup &&
-    ./service.sh start &&
-    ld
-}

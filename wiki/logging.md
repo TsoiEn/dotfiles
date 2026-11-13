@@ -10,7 +10,7 @@ LOG_FILE="${LOG_FILE:-$LOG_DIR/bootstrap-<YYYYMMDD-HHMMSS>.log}"
 ```
 
 - Creates `LOG_DIR`, touches the file, exports both.
-- **Never overwrites an existing `LOG_FILE`.** Bootstrap calls `log_init` once and exports `LOG_FILE`; `install/arch.sh` and `install/macos.sh` check `if [ -z "${LOG_FILE:-}" ]` before calling it again, so they append to the same file instead of starting a new one.
+- **Never overwrites an existing `LOG_FILE`.** Bootstrap calls `log_init` once and exports `LOG_FILE`; `install/packages.sh` checks `if [ -z "${LOG_FILE:-}" ]` before calling it again, so they append to the same file instead of starting a new one.
 - When `LOG_DIR` is unset and a script runs standalone, it defaults to `<repo>/logs/`.
 
 ## Output

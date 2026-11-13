@@ -20,6 +20,8 @@
 # Uses `if` (not `&&`) so a failed condition can never trip `set -e`.
 # ---------------------------------------------------------------------------
 if [[ -n "${_DOTFILES_UTILS_SOURCED:-}" ]]; then
+  # shellcheck disable=SC2317  # the unset runs when this file is
+  # executed rather than sourced, where `return` is an error.
   return 0 2>/dev/null || unset _DOTFILES_UTILS_SOURCED
 fi
 _DOTFILES_UTILS_SOURCED=1
@@ -84,7 +86,7 @@ _log() {
 
   # Appending to the log must never abort the caller under `set -e`.
   if [[ -n "${LOG_FILE:-}" ]]; then
-    printf '%s\n' "$plain" >> "$LOG_FILE" 2>/dev/null || true
+    printf '%s\n' "$plain" >>"$LOG_FILE" 2>/dev/null || true
   fi
 }
 

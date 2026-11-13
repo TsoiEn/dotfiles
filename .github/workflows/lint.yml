@@ -1,0 +1,27 @@
+name: lint
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  shell:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # shellcheck ships with the runner image. -x follows `source`.
+      - name: shellcheck
+        run: git ls-files '*.sh' | xargs shellcheck -x
+
+      # Formatting is enforced for the installer only: configs/ holds
+      # hand-formatted personal scripts that shellcheck still covers.
+      - name: shfmt
+        run: |
+          curl -fsSL -o /tmp/shfmt \
+            https://github.com/mvdan/sh/releases/download/v3.14.1/shfmt_v3.14.1_linux_amd64
+          chmod +x /tmp/shfmt
+          /tmp/shfmt -i 2 -ci -d bootstrap.sh install scripts tests
+
+      - name: tests
+        run: bash tests/run.sh

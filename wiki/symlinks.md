@@ -4,7 +4,7 @@
 
 ## The link map
 
-Eight targets, declared as `repo-relative source | $HOME-relative destination`:
+Ten targets, declared as `repo-relative source | $HOME-relative destination`:
 
 | Source | Target |
 |---|---|
@@ -14,10 +14,12 @@ Eight targets, declared as `repo-relative source | $HOME-relative destination`:
 | `configs/tmux/.tmux.conf` | `~/.tmux.conf` |
 | `configs/tmux/.config/tmuxScript` | `~/.config/tmuxScript` |
 | `configs/ghostty/.config/ghostty` | `~/.config/ghostty` |
+| `configs/aerospace/.aerospace.toml` | `~/.aerospace.toml` |
 | `configs/myscripts/.config/myscripts` | `~/.config/myscripts` |
 | `configs/git/.config/git/ignore` | `~/.config/git/ignore` |
+| `configs/git/.gitconfig` | `~/.gitconfig` |
 
-**Directory-level, not file-level:** each entry links a whole directory (or a single file — `.zshrc`, `.tmux.conf` and `~/.config/git/ignore`), so adding a file inside `~/.config/nvim/` requires no changes here. The tradeoff is that merging into a pre-existing real directory is not possible — the directory gets backed up wholesale.
+**Directory-level, not file-level:** each entry links a whole directory (or a single file — `.zshrc`, `.tmux.conf`, `.aerospace.toml` and `~/.config/git/ignore`), so adding a file inside `~/.config/nvim/` requires no changes here. The tradeoff is that merging into a pre-existing real directory is not possible — the directory gets backed up wholesale.
 
 ## The algorithm
 
@@ -54,7 +56,7 @@ Consequences:
 1. Place it in `configs/` following the existing layout (path relative to a fake `$HOME`).
 2. Add one line to `LINK_MAP` in `scripts/setup-symlinks.sh`:
    ```bash
-   "configs/git/.gitconfig|.gitconfig"
+   "configs/bat/.config/bat|.config/bat"
    ```
 3. Re-run `bash scripts/setup-symlinks.sh` — validate-first means a typo in the source path fails before `$HOME` changes.
 

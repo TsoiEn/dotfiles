@@ -149,7 +149,7 @@ R_LAST=0
 # read_repo <path> — fill the R_* globals. Returns 1 if the path is not a
 # readable repo (deleted mid-scan, permissions, a corrupt clone).
 read_repo() {
-  local repo="$1" out line head upstream ab
+  local repo="$1" out line head ab
 
   out="$(git -C "$repo" --no-optional-locks status --porcelain=v2 --branch 2>/dev/null)" || return 1
 

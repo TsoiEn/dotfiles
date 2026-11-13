@@ -72,7 +72,7 @@ _os_release_value() {
       printf '%s' "$line"
       return 0
     fi
-  done < "$file"
+  done <"$file"
   return 1
 }
 

@@ -16,7 +16,7 @@ You are not running from the repo root, or the checkout is partial. Run `./boots
 
 ## `Required command not found: brew` (fresh macOS)
 
-Homebrew isn't installed yet — no script bootstraps it (Phase 5). Install brew first, then re-run `./bootstrap.sh`. Same idea for missing `git`.
+Homebrew isn't installed yet and `ensure_brew` could not install it. It needs the Xcode Command Line Tools first — finish `xcode-select --install`, then re-run `./bootstrap.sh`. Same idea for missing `git`.
 
 ## `source missing — repo incomplete: …`
 

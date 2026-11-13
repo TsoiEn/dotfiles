@@ -1,15 +1,13 @@
+# macOS-only names. The shared list is install/packages/common.txt.
+
 # Core tools
-neovim
-tmux
-git
-zsh
-fzf
-ripgrep
-zoxide
-yazi
-eza
-lazygit
-lazydocker
+gh
+
+# Toolchains (Mason prerequisites; unzip/curl/tar ship with macOS)
+node
+openjdk
 
 # GUI apps (casks)
-# cask:ghostty
+cask:ghostty
+cask:aerospace
+cask:font-symbols-only-nerd-font

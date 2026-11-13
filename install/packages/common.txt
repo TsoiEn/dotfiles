@@ -1,0 +1,22 @@
+# Packages whose name is identical on both OSes.
+# Read by BOTH installers, before the per-OS list. OS-specific names
+# (gh vs github-cli, node vs nodejs) belong in brew.txt / arch.txt.
+
+# Core tools
+neovim
+tmux
+git
+zsh
+fzf
+ripgrep
+zoxide
+yazi
+eza
+lazygit
+lazydocker
+
+# Toolchains (nvm for node versions; python/go are Mason prerequisites).
+# nvm is AUR-only on Arch — needs paru (DOTFILES_AUR=1).
+nvm
+python
+go

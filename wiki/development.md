@@ -5,10 +5,12 @@ Conventions for changing the installer without breaking it.
 ## Before you change anything
 
 ```bash
-bash -n bootstrap.sh install/*.sh scripts/*.sh    # syntax sweep (fast, always run)
+bash tests/run.sh                                 # 23 sandboxed checks
+shellcheck -x $(git ls-files '*.sh')              # same invocation as CI
+shfmt -i 2 -ci -d bootstrap.sh install scripts tests
 ```
 
-`shellcheck`/`shfmt` + CI are Phase 6 — until then `bash -n` plus the manual patterns below are the safety net.
+All three run in CI ([`.github/workflows/lint.yml`](../.github/workflows/lint.yml)). `shfmt` covers the installer only — `configs/` holds hand-formatted personal scripts that shellcheck still checks. The patterns below are how to extend `tests/run.sh`.
 
 ## Testing patterns
 
@@ -66,7 +68,7 @@ Running a script against the **real** `$HOME` is valuable (it must report `alrea
 | Task | Where |
 |---|---|
 | Add a config | `LINK_MAP` in `scripts/setup-symlinks.sh` — see [symlinks.md](symlinks.md) |
-| Add a package | `install/packages/{arch,brew}.txt` — see [packages.md](packages.md) |
+| Add a package | `install/packages/common.txt` when the name is the same on both OSes, else `{arch,brew}.txt` — see [packages.md](packages.md) |
 | Logging behavior | `scripts/utils.sh` (`_log`, `log_init`) |
 | Bootstrap sequence/order | `bootstrap.sh` — see [bootstrap.md](bootstrap.md) |
 

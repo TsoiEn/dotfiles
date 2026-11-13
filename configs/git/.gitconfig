@@ -1,0 +1,18 @@
+# Global git config, linked to ~/.gitconfig by scripts/setup-symlinks.sh.
+#
+# No identity here on purpose: gclone sets user.name/user.email per repo,
+# from the directory it clones into (Personal vs Work). Anything
+# machine-local — credential helper, signing key, a fallback identity —
+# goes in ~/.config/git/local, included below and not tracked.
+#
+# Note: `git config --global ...` now edits THIS file, i.e. this repo.
+
+[core]
+	excludesFile = ~/.config/git/ignore
+
+[init]
+	defaultBranch = main
+
+# Missing include paths are ignored by git, so this is safe on a fresh box.
+[include]
+	path = ~/.config/git/local

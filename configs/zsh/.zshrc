@@ -15,15 +15,15 @@ if [[ -d "$ZSHRC_DIR" ]]; then
         [[ -r "$file" ]] && source "$file"
     done
 
-    if [[ -d "$ZSHRC_DIR/custom" ]]; then
-        for file in "$ZSHRC_DIR/custom"/*.zsh(N); do
+    if [[ -d "$ZSH_LOCAL" ]]; then
+        for file in "$ZSH_LOCAL"/*.zsh(N); do
             [[ -r "$file" ]] && source "$file"
         done
     fi
 fi
 
-# Comment this if you're using linux
-source /opt/homebrew/opt/nvm/nvm.sh
+# Absent on Linux, and on a macOS box without the nvm formula.
+[[ -r /opt/homebrew/opt/nvm/nvm.sh ]] && source /opt/homebrew/opt/nvm/nvm.sh
 
 # pnpm
 export PNPM_HOME="/Users/Aaron/Library/pnpm"
@@ -32,3 +32,4 @@ case ":$PATH:" in
   *) export PATH="$PNPM_HOME/bin:$PATH" ;;
 esac
 # pnpm end
+export PATH=$PATH:$HOME/.maestro/bin

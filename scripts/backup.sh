@@ -22,6 +22,8 @@
 # Re-source guard (same `if`/`return` pattern as utils.sh — never `&&`).
 # ---------------------------------------------------------------------------
 if [[ -n "${_DOTFILES_BACKUP_SOURCED:-}" ]]; then
+  # shellcheck disable=SC2317  # the unset runs when this file is
+  # executed rather than sourced, where `return` is an error.
   return 0 2>/dev/null || unset _DOTFILES_BACKUP_SOURCED
 fi
 _DOTFILES_BACKUP_SOURCED=1

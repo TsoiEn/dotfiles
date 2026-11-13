@@ -15,14 +15,28 @@ bootstrap.sh
 ├── OS="$(detect_os || true)"
 │     └── empty → die "Unsupported OS. Supported: arch, macos"
 ├── case $OS
-│     arch  → bash install/arch.sh
-│     macos → bash install/macos.sh
-└── setup scripts (each is a separate `bash` process)
+│     arch  → bash install/packages.sh arch
+│     macos → bash install/packages.sh macos
+└── setup scripts (each is a separate `bash` process, SETUP_SCRIPTS order)
       1. scripts/setup-symlinks.sh     ← must run FIRST
-      2. scripts/setup-nvim.sh
-      3. scripts/setup-tmux.sh
-      4. scripts/setup-ghostty.sh
+      2. scripts/setup-zsh.sh
+      3. scripts/setup-nvim.sh
+      4. scripts/setup-tmux.sh
+      5. scripts/setup-ghostty.sh
+      6. scripts/setup-claude.sh
 ```
+
+## Flags
+
+Parsed before `log_init`, so `--help` and a typo write no log and touch no `$HOME`:
+
+| Flag | Effect |
+|---|---|
+| `--skip-packages` | skip the OS detection + package layer entirely |
+| `--only=<script>` | run one of `SETUP_SCRIPTS` (name, `name.sh` or `scripts/name.sh`); implies `--skip-packages` |
+| `-h`, `--help` | usage, exit 0 |
+
+An unknown flag or an unknown script name exits 1 with the usage block.
 
 ### Why symlinks run first
 

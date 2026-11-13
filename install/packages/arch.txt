@@ -1,15 +1,26 @@
+# Arch-only names. The shared list is install/packages/common.txt.
+
 # Core tools
-neovim
-tmux
-git
-zsh
-fzf
-ripgrep
-zoxide
-yazi
-eza
-lazygit
-lazydocker
+github-cli
+
+# Toolchains (Mason prerequisites)
+nodejs
+npm
+python-pip
+jdk-openjdk
+
+# Mason downloads release archives over HTTP
+unzip
+curl
+tar
+
+# base-devel also covers makepkg, needed by any AUR package
+base-devel
+
+# Fonts, clipboard, terminal
+ttf-nerd-fonts-symbols
+wl-clipboard
+ghostty
 
 # Optional
 # paru

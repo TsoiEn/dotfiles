@@ -300,7 +300,7 @@ main() {
     warn "not a recognized GitHub URL — handing it to git unchanged: $url"
   fi
 
-  args[$url_index]="$rewritten"
+  args[url_index]="$rewritten"
 
   # `git clone -c k=v` writes k=v into the NEW repo's .git/config, so the
   # identity lands there without this script needing to know (or guess) the

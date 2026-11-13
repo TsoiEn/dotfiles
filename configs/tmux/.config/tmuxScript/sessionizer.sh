@@ -338,6 +338,29 @@ open_line() {
   attach_or_switch "$session_name"
 }
 
+# A typed name has no path of its own, so ask where the session should live
+# and let zoxide resolve the answer. Prints the chosen directory; an empty
+# answer, no tty, or no zoxide match all fall back to start_dir.
+ask_dir() {
+  local name="$1" dir
+  local -a terms
+  # Prompts go to stderr: stdout is the chosen directory, read by our caller.
+  printf '\n  "%s" has no home yet — where should it set up camp?\n' "$name" >&2
+  printf '  zoxide search (empty = %s): ' "$(tildify "$(start_dir)")" >&2
+  read -r -a terms || true
+  if [[ ${#terms[@]} -gt 0 ]]; then
+    dir="$(zoxide query -- "${terms[@]}" 2>/dev/null || true)"
+    if [[ -n "$dir" && -d "$dir" ]]; then
+      printf '%s' "$dir"
+      return 0
+    fi
+    printf '  no zoxide match for "%s" — starting in %s\n' \
+      "${terms[*]}" "$(tildify "$(start_dir)")" >&2
+    sleep 1
+  fi
+  start_dir
+}
+
 # Starting directory for a brand-new, name-only session (no path involved).
 # Deliberately $HOME rather than the directory the popup was launched from: a
 # session named after something you just typed has no path of its own, so it
@@ -366,9 +389,9 @@ create_named_session() {
   name="${name#"${name%%[!-]*}"}"
   name="${name#"${name%%[![:space:]]*}"}"
   [[ -z "$name" ]] && return 0
-  dir="$(start_dir)"
   if ! tmux has-session -t "=$name" 2>/dev/null; then
     local err
+    dir="$(ask_dir "$name")"
     if ! err="$(tmux new-session -d -s "$name" -c "$dir" 2>&1)"; then
       printf 'sessionizer: failed to create session "%s": %s\n' "$name" "$err" >&2
       if [[ -n "${TMUX:-}" ]]; then
