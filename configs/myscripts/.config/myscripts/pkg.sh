@@ -239,7 +239,7 @@ list_all() {
 lookup() {
   local query="$1" q m hits found=0 real path_line owner_line
   q="$(printf '%s' "$query" | tr '[:upper:]' '[:lower:]')"
-  hits="$(mktemp -t pkg)" || return 1
+  hits="$(mktemp "${TMPDIR:-/tmp}/pkg.XXXXXX")" || return 1
 
   for m in $MANAGERS; do
     mgr_available "$m" || continue

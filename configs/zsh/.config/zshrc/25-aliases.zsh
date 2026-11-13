@@ -51,7 +51,7 @@ alias src='source ~/.zshrc'
 unalias gclone 2>/dev/null
 'gclone'() {
     local cd_file dir rc    # not `status`: that name is read-only in zsh
-    cd_file="$(mktemp -t gclone)" || return 1
+    cd_file="$(mktemp "${TMPDIR:-/tmp}/gclone.XXXXXX")" || return 1
     GCLONE_CD_FILE="$cd_file" ~/.config/myscripts/gclone.sh "$@"
     rc=$?
     dir="$(<"$cd_file")"
