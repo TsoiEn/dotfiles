@@ -118,9 +118,18 @@ main() {
       n) DRY_RUN=1 ;;
       D) action="-D" ;;
       R) action="-R" ;;
-      l) all_packages; exit 0 ;;
-      h) usage; exit 0 ;;
-      *) usage >&2; exit 2 ;;
+      l)
+        all_packages
+        exit 0
+        ;;
+      h)
+        usage
+        exit 0
+        ;;
+      *)
+        usage >&2
+        exit 2
+        ;;
     esac
   done
   shift $((OPTIND - 1))
