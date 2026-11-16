@@ -33,3 +33,10 @@ case ":$PATH:" in
 esac
 # pnpm end
 export PATH=$PATH:$HOME/.maestro/bin
+
+# bun completions
+[ -s "/home/tsn/.bun/_bun" ] && source "/home/tsn/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"

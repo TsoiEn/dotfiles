@@ -3,15 +3,53 @@
 # excludes file ($XDG_CONFIG_HOME/git/ignore) when core.excludesFile is unset.
 #
 # This applies to EVERY repo on the machine, including other people's, so only
-# patterns that are never a repo's real content belong here.
+# patterns that are never a repo's real content belong here. Escape hatch,
+# where one of these is real content: git add -f <path>
+# ---------------------------------------------------------------------------
+
+# Scratch files written by tooling.
 #
 # commit.md is written by the global commit-log skill
 # (configs/claude/.claude/skills/commit-log/SKILL.md): one proposed commit
-# message for the current branch, scratch by definition. Ignoring it here
-# keeps it out of every repo without editing anyone's .gitignore.
-# Escape hatch, in a repo where the file is real content: git add -f commit.md
-# ---------------------------------------------------------------------------
+# message for the current branch, scratch by definition.
 commit.md
 plan.md
 graphify-out/
 .gitattributes
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+desktop.ini
+
+# Editors / IDEs
+*.swp
+*.swo
+*~
+.vim/
+.nvim/
+.idea/
+.vscode/
+*.sublime-workspace
+.netrwhist
+
+# Tooling / env
+.direnv/
+.env.local
+*.log
+.cache/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Node
+node_modules/

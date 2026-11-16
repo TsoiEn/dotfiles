@@ -31,3 +31,7 @@ is `graphifyy`.
 Skip it in the `99` Neovim plugin: 99 replaces the selection and nothing else,
 so a caller list is unusable there and `graphify update` is a reindex inside a
 one-shot request. (99 fences out the plugin, but still loads this file.)
+
+# graphify
+- **graphify** (`~/.claude/skills/graphify/SKILL.md`) - any input to knowledge graph. Trigger: `/graphify`
+When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.

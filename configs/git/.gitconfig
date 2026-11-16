@@ -1,4 +1,5 @@
-# Global git config, linked to ~/.gitconfig by scripts/setup-symlinks.sh.
+# Global git config, linked to ~/.gitconfig by scripts/setup-symlinks.sh
+# (or scripts/stow.sh).
 #
 # No identity here on purpose: gclone sets user.name/user.email per repo,
 # from the directory it clones into (Personal vs Work). Anything
@@ -8,10 +9,78 @@
 # Note: `git config --global ...` now edits THIS file, i.e. this repo.
 
 [core]
+	editor = nvim
 	excludesFile = ~/.config/git/ignore
+	autocrlf = input
 
 [init]
 	defaultBranch = main
+
+[pull]
+	rebase = true
+
+[rebase]
+	autoStash = true
+	autoSquash = true
+
+[push]
+	default = simple
+	autoSetupRemote = true
+	followTags = true
+
+[fetch]
+	prune = true
+	prunetags = true
+	fsckobjects = true
+
+[rerere]
+	enabled = true
+	autoupdate = true
+
+[diff]
+	algorithm = histogram
+	colorMoved = zebra
+	mnemonicPrefix = true
+	renames = copies
+
+[merge]
+	conflictstyle = zdiff3
+
+[log]
+	date = iso
+
+[column]
+	ui = auto
+
+[branch]
+	sort = -committerdate
+
+[tag]
+	sort = version:refname
+
+[help]
+	autocorrect = prompt
+
+# Verify object integrity on the way in and the way out — a corrupt object
+# should fail the transfer, not land in the repo.
+[transfer]
+	fsckobjects = true
+
+[receive]
+	fsckObjects = true
+
+[gc]
+	auto = 256
+
+[alias]
+	st = status
+	co = checkout
+	br = branch
+	ci = commit
+	lg = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(auto)%d%C(reset)'
+	last = log -1 HEAD --stat
+	unstage = restore --staged
+	amend = commit --amend --no-edit
 
 # Missing include paths are ignored by git, so this is safe on a fresh box.
 [include]

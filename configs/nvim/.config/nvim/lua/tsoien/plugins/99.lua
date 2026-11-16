@@ -108,6 +108,16 @@ return {
 
 			local keymap = vim.keymap
 
+			-- the split 99 opens for search results (open_qfix_for_request)
+			--- @return integer | nil
+			local function qf_window()
+				for _, win in ipairs(vim.api.nvim_list_wins()) do
+					if vim.fn.getwininfo(win)[1].quickfix == 1 then
+						return win
+					end
+				end
+			end
+
 			-- visual mode only, so an old selection never gets reused by accident
 			keymap.set("v", "<leader>9v", function()
 				_99.visual()
@@ -135,6 +145,19 @@ return {
 			keymap.set("n", "<leader>9W", function()
 				_99.Extensions.Worker.search()
 			end, { desc = "99 search work" })
+
+			-- collapse / restore the quickfix split <leader>9W opens, keeping the
+			-- list so <leader>9o and :copen still bring it back
+			local qf_height = 10
+			keymap.set("n", "<leader>9q", function()
+				local win = qf_window()
+				if win then
+					qf_height = vim.api.nvim_win_get_height(win)
+					vim.cmd("cclose")
+				else
+					vim.cmd("copen " .. qf_height)
+				end
+			end, { desc = "99 toggle qf window" })
 
 			keymap.set("n", "<leader>9m", function()
 				require("99.extensions.telescope").select_model()

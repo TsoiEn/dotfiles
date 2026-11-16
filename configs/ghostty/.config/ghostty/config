@@ -2,13 +2,13 @@
 theme = Rose Pine
 
 # font
-font-size = 14
+font-size = 9
 
 # window decoration
 mouse-hide-while-typing = true
 window-decoration = true
-window-width = 800
-window-height = 600
+window-width = 1000
+window-height = 800
 title = "×͜×"
 background-opacity = 0.8
 window-padding-balance = true
