@@ -5,7 +5,7 @@
 # Entry point: bootstrap.sh runs this FIRST (before the per-app setup
 # scripts), so setup-nvim.sh can verify ~/.config/nvim afterwards.
 #
-# Strategy: directory-level links — ten top-level targets, whole
+# Strategy: directory-level links — eleven top-level targets, whole
 # directories linked at once. New files added under configs/ inside those
 # directories require no changes here.
 #
@@ -61,6 +61,8 @@ LINK_MAP=(
   # Identity stays out of it (gclone sets it per repo); machine-local
   # settings go in the untracked ~/.config/git/local it includes.
   "configs/git/.gitconfig|.gitconfig"
+  # Single file for the same reason as git's ignore above.
+  "configs/starship/.config/starship.toml|.config/starship.toml"
 )
 
 LINKED=0

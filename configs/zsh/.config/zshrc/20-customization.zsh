@@ -20,6 +20,13 @@ plugins=(
 source "$ZSH/oh-my-zsh.sh"
 
 # -----------------------------------------------------
+# Starship prompt
+# -----------------------------------------------------
+# Runs after oh-my-zsh so it overrides $ZSH_THEME; the theme above stays as the
+# fallback on a box where starship is not installed yet.
+(( $+commands[starship] )) && eval "$(starship init zsh)"
+
+# -----------------------------------------------------
 # FZF
 # -----------------------------------------------------
 source <(fzf --zsh)

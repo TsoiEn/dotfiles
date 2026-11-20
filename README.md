@@ -14,7 +14,7 @@ Design goals:
 - **Fully logged** — bootstrap and every child script write to one shared log file.
 - **Fail loudly, degrade politely** — a broken repo aborts *before* touching `$HOME`; optional extras (plugins, GUI apps) warn instead of failing.
 
-Manages: **zsh**, **Neovim**, **tmux**, **Ghostty**, **git**, **Claude Code** — 41 config files.
+Manages: **zsh**, **Neovim**, **tmux**, **Ghostty**, **starship**, **git**, **Claude Code** — 42 config files.
 
 ## What's new — Phase 1
 
@@ -25,13 +25,13 @@ The installer previously referenced a `scripts/` directory that did not exist, s
 | `scripts/utils.sh` | Logging (`log_init`, `log_info/…`), `die`, `ensure_dir`, `command_exists`, `require_command`, `run_as_root` |
 | `scripts/detect-os.sh` | `detect_os` → `arch` \| `macos` (uname → os-release → pacman fallback) |
 | `scripts/backup.sh` | `backup_path` — moves existing configs into a timestamped session, `$HOME`-scoped safety rails |
-| `scripts/setup-symlinks.sh` | Links all 9 targets (validates every source first, then backs up + links) |
+| `scripts/setup-symlinks.sh` | Links all 11 targets (validates every source first, then backs up + links) |
 | `scripts/setup-zsh.sh` | Clones oh-my-zsh + its three external plugins, optional `chsh` |
 | `scripts/setup-tmux.sh` | Installs tpm + plugins (best effort; not in any package list) |
 | `scripts/setup-nvim.sh` | Verifies config wiring + lazy.nvim state; optional `SETUP_NVIM_SYNC=1` |
 | `scripts/setup-ghostty.sh` | Detects Ghostty (CLI or app bundle) + verifies config link |
 
-Symlink map — 9 targets (directory-level, plus the single files):
+Symlink map — 11 targets (directory-level, plus the single files):
 
 | Source | Target |
 |---|---|
@@ -45,6 +45,7 @@ Symlink map — 9 targets (directory-level, plus the single files):
 | `configs/myscripts/.config/myscripts` | `~/.config/myscripts` |
 | `configs/git/.config/git/ignore` | `~/.config/git/ignore` |
 | `configs/git/.gitconfig` | `~/.gitconfig` |
+| `configs/starship/.config/starship.toml` | `~/.config/starship.toml` |
 
 Also included: physical-path canonicalization (idempotent even through symlinked repo paths), validate-first ordering (a broken repo never half-links `$HOME`), and a sandboxed test suite — `bash tests/run.sh`, **23 checks** with a `mktemp` `$HOME`, stubbed package managers and a tripwire asserting the real `$HOME` was never touched.
 
@@ -58,7 +59,7 @@ cd ~/.dotfiles
 ./bootstrap.sh
 ```
 
-**First run:** detects the OS → installs missing packages from `install/packages/*.txt` → links the 9 targets (anything already at those paths is moved to `backups/<timestamp>/`) → runs the per-app setup checks. Read the run's log at `logs/bootstrap-<timestamp>.log`.
+**First run:** detects the OS → installs missing packages from `install/packages/*.txt` → links the 11 targets (anything already at those paths is moved to `backups/<timestamp>/`) → runs the per-app setup checks. Read the run's log at `logs/bootstrap-<timestamp>.log`.
 
 **Re-run:** safe at any time — installed packages are skipped, correct links are reported as `already linked`, and no new backup session is created if there is nothing to back up.
 

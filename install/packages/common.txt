@@ -13,6 +13,7 @@ ripgrep
 zoxide
 yazi
 eza
+starship
 lazygit
 lazydocker
 

@@ -39,6 +39,7 @@ alias lg='lazygit'
 alias ts='~/.config/tmuxScript/sessionizer.sh'
 alias oc='opencode'
 alias src='source ~/.zshrc'
+alias cj='claude'
 # clone with the identity of the directory you're in (Personal vs Work), then
 # cd into the new repo. The script runs in its own process and so cannot move
 # this shell — it writes the directory it cloned into to $GCLONE_CD_FILE and we
