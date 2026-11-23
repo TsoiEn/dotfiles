@@ -394,7 +394,10 @@ if command -v fzf >/dev/null 2>&1 && command -v script >/dev/null 2>&1; then
   # has finished; without it --pick waits there, as it should.
   pick_with() {
     : >"$WORK/choice"
-    { printf '\r'; sleep 2; } |
+    {
+      printf '\r'
+      sleep 2
+    } |
       PATH="$PKG_BIN:/usr/bin:/bin" STUB_GOPATH="$WORK/gopath" \
         PKG_ROWS="$WORK/rows" PKG_CHOICE="$WORK/choice" \
         FZF_DEFAULT_OPTS="--bind $1" \
@@ -415,7 +418,14 @@ if command -v fzf >/dev/null 2>&1 && command -v script >/dev/null 2>&1; then
   # row, once for the popup's hold) must land on the exact pacman hit.
   search_pick() {
     : >"$WORK/choice"
-    { printf 'neovim'; sleep 3; printf '\r'; sleep 2; printf '\r'; sleep 1; } |
+    {
+      printf 'neovim'
+      sleep 3
+      printf '\r'
+      sleep 2
+      printf '\r'
+      sleep 1
+    } |
       PATH="$PKG_BIN:/usr/bin:/bin" STUB_GOPATH="$WORK/gopath" \
         PKG_ROWS="" PKG_CHOICE="$WORK/choice" \
         timeout 40 script -qc "bash $REPO/configs/myscripts/.config/myscripts/pkg.sh --pick" \
@@ -436,9 +446,16 @@ if command -v fzf >/dev/null 2>&1 && command -v script >/dev/null 2>&1; then
   # second would untick it.
   tick_pick() {
     : >"$WORK/choice"
-    { sleep 1
-      for k in "$@"; do printf '%b' "$k"; sleep 2; done
-      sleep 2; printf '\r'; sleep 1; } |
+    {
+      sleep 1
+      for k in "$@"; do
+        printf '%b' "$k"
+        sleep 2
+      done
+      sleep 2
+      printf '\r'
+      sleep 1
+    } |
       PATH="$PKG_BIN:/usr/bin:/bin" STUB_GOPATH="$WORK/gopath" \
         PKG_ROWS="$WORK/rows" PKG_CHOICE="$WORK/choice" \
         timeout 40 script -qc "bash $REPO/configs/myscripts/.config/myscripts/pkg.sh --pick" \
@@ -447,7 +464,7 @@ if command -v fzf >/dev/null 2>&1 && command -v script >/dev/null 2>&1; then
   }
   check "ctrl-a ticks a row and alt-enter installs every ticked one" \
     test "$(tick_pick '\001' '\001' '\033\r')" = \
-      "$(printf 'pacman\tzzz-pkg-test\t0\naur\tzzz-aur-test\t0')"
+    "$(printf 'pacman\tzzz-pkg-test\t0\naur\tzzz-aur-test\t0')"
   check "enter installs nothing while a row is ticked" \
     test -z "$(tick_pick '\001' '\r' '\033')"
 
@@ -457,8 +474,18 @@ if command -v fzf >/dev/null 2>&1 && command -v script >/dev/null 2>&1; then
   # never whatever the cursor ended up on.
   tick_search() {
     : >"$WORK/choice"
-    { printf 'neovim'; sleep 3; printf '\001'; sleep 2; printf '\025fzf'; sleep 3;
-      printf '\033\r'; sleep 3; printf '\r'; sleep 1; } |
+    {
+      printf 'neovim'
+      sleep 3
+      printf '\001'
+      sleep 2
+      printf '\025fzf'
+      sleep 3
+      printf '\033\r'
+      sleep 3
+      printf '\r'
+      sleep 1
+    } |
       PATH="$PKG_BIN:/usr/bin:/bin" STUB_GOPATH="$WORK/gopath" \
         PKG_ROWS="" PKG_CHOICE="$WORK/choice" \
         timeout 60 script -qc "bash $REPO/configs/myscripts/.config/myscripts/pkg.sh --pick" \
@@ -472,7 +499,11 @@ if command -v fzf >/dev/null 2>&1 && command -v script >/dev/null 2>&1; then
   # current directory, which would open the search popup on a list of files.
   # The marker file is how that shows up here: it must never be touched.
   rm -f "$WORK/walked"
-  { sleep 1; printf '\033'; sleep 1; } |
+  {
+    sleep 1
+    printf '\033'
+    sleep 1
+  } |
     PATH="$PKG_BIN:/usr/bin:/bin" STUB_GOPATH="$WORK/gopath" \
       PKG_ROWS="" PKG_CHOICE="$WORK/choice" \
       FZF_DEFAULT_COMMAND="touch $WORK/walked; echo bogus-row" \
@@ -494,8 +525,10 @@ check "a search row for something already here says so, before any enter" \
 check "and the row carries the holding manager for the preview" \
   grep -qP '\tpacman\tfzf\tpacman$' "$WORK/pkgout"
 check "a one-letter query is not searched" \
-  test -z "$(run_pkg --rows n; cat "$WORK/pkgout")"
-
+  test -z "$(
+    run_pkg --rows n
+    cat "$WORK/pkgout"
+  )"
 
 # Whatever the popup did, it said so in there: closing it must not leave a
 # line behind, which under a tmux key binding would be a view window.
@@ -519,7 +552,7 @@ if command -v fzf >/dev/null 2>&1; then
   # The tmux key binding runs a bare pkg, and tmux announces any non-zero
   # status as "'...pkg.sh' returned 1" over the session. Closing the picker
   # is not a failure, so that entry point always succeeds.
-  run_pkg_popup '' 
+  run_pkg_popup ''
   rc=$?
   check "a closed search popup is not a failed command" test "$rc" -eq 0
   check "and prints nothing at all" test ! -s "$WORK/pkgout"
