@@ -224,6 +224,11 @@ case "$1" in
     '^neovim$') printf 'neovim\n' ;;
     *) exit 1 ;;
   esac ;;
+  -Ss) case "$3" in
+    neovim) printf 'extra/neovim-nightly 0.11.0-1\n    Nightly build\nextra/neovim 0.10.2-1\n    Fork of Vim\n' ;;
+    fzf) printf 'extra/fzf 0.56.3-1\n    Command-line fuzzy finder\n' ;;
+    *) exit 1 ;;
+  esac ;;
 esac
 exit 0
 STUB
@@ -268,14 +273,52 @@ esac
 exit 0
 STUB
 
+# Silent stubs: -i now asks every manager in parallel, so any real cargo,
+# gem, flatpak, snap or pip on the host would make the suite hit the network.
+for quiet in cargo gem flatpak snap pip3 pip pnpm; do
+  printf '#!/bin/sh\nexit 0\n' >"$PKG_BIN/$quiet"
+done
+
+# The popup installs what it picked, so the picker check below runs a real
+# install command: sudo has to be a stub too, and it must reach the stubs.
+printf '#!/bin/sh\nexec "$@"\n' >"$PKG_BIN/sudo"
+
+# Stands in for display-popup: no terminal, just the pick it was told to
+# make, written to the choice file named in the env handed to the popup.
+cat >"$PKG_BIN/tmux" <<'STUB'
+#!/usr/bin/env bash
+for arg in "$@"; do
+  case "$arg" in
+    PKG_CHOICE=*) choice="${arg#PKG_CHOICE=}" ;;
+  esac
+done
+if [[ -n "${choice:-}" && -n "${STUB_PICK:-}" ]]; then
+  printf '%b\n' "$STUB_PICK" >"$choice"
+fi
+exit 0
+STUB
+
 printf '#!/bin/sh\n' >"$PKG_BIN/rg"
 printf '#!/bin/sh\n' >"$WORK/gopath/bin/mytool"
 chmod +x "$PKG_BIN"/* "$WORK/gopath/bin/mytool"
 
 # run_pkg [args...] — stubs first on a PATH that holds no real
-# package manager, so the output depends on the stubs alone.
+# package manager, so the output depends on the stubs alone. TMUX is unset
+# too: inside tmux pkg would reach for a display-popup, and these checks are
+# about the terminal path it takes everywhere else.
 run_pkg() {
-  PATH="$PKG_BIN:$WORK/gopath/bin:/usr/bin:/bin" STUB_GOPATH="$WORK/gopath" \
+  env -u TMUX PATH="$PKG_BIN:$WORK/gopath/bin:/usr/bin:/bin" STUB_GOPATH="$WORK/gopath" \
+    NO_COLOR=1 bash "$REPO/configs/myscripts/.config/myscripts/pkg.sh" "$@" \
+    >"$WORK/pkgout" 2>&1
+}
+
+# run_pkg_popup <pick> [args...] — the same, inside tmux, with the popup
+# standing in for a real one and handing back <pick> ('' for a cancel).
+run_pkg_popup() {
+  local pick="$1"
+  shift
+  TMUX=fake STUB_PICK="$pick" \
+    PATH="$PKG_BIN:$WORK/gopath/bin:/usr/bin:/bin" STUB_GOPATH="$WORK/gopath" \
     NO_COLOR=1 bash "$REPO/configs/myscripts/.config/myscripts/pkg.sh" "$@" \
     >"$WORK/pkgout" 2>&1
 }
@@ -315,7 +358,7 @@ check "-l with an unknown manager exits 1" test "$rc" -eq 1
 run_pkg -i fzf
 rc=$?
 check "-i on something already installed stops, and says where" \
-  grep -q 'already installed: pacman fzf' "$WORK/pkgout"
+  grep -q 'fzf is already installed with pacman (0.56.3)' "$WORK/pkgout"
 check "-i on something already installed exits 0" test "$rc" -eq 0
 
 run_pkg -i neovim
@@ -324,9 +367,167 @@ check "-i finds the manager that carries it and shows the exact command" \
 check "-i never installs without a confirmation" \
   grep -q 'no terminal to confirm on' "$WORK/pkgout"
 
+check "-i offers every search hit, not just the exact name" \
+  grep -q 'neovim-nightly' "$WORK/pkgout"
+check "the exact name is the first candidate" \
+  grep -qE '^  1\) pacman .*--needed neovim$' "$WORK/pkgout"
+
+run_pkg neovim
+check "a bare name nothing here carries falls through to the search" \
+  grep -q 'searching every manager for "neovim"' "$WORK/pkgout"
+check "and offers the install it found" \
+  grep -q 'sudo pacman -S --needed neovim' "$WORK/pkgout"
+
 run_pkg -i yay-bin
 check "-i reaches the AUR helper when pacman does not carry it" \
   grep -qE 'paru -S --needed yay-bin' "$WORK/pkgout"
+
+# The popup half: which row fzf hands back, and that the pick is installed
+# right there, reporting its exit status to the caller. Driven headless
+# through a pty (fzf needs a terminal, so this is skipped without one), on
+# the stub PATH and with names no real manager carries — nothing here may
+# reach the machine even if a stub were missed.
+if command -v fzf >/dev/null 2>&1 && command -v script >/dev/null 2>&1; then
+  printf 'pacman   zzz-pkg-test\tpacman\tzzz-pkg-test\naur      zzz-aur-test\taur\tzzz-aur-test\npacman   fzf\tpacman\tfzf\n' \
+    >"$WORK/rows"
+  # The fed newline is the keypress that closes the popup once the install
+  # has finished; without it --pick waits there, as it should.
+  pick_with() {
+    : >"$WORK/choice"
+    { printf '\r'; sleep 2; } |
+      PATH="$PKG_BIN:/usr/bin:/bin" STUB_GOPATH="$WORK/gopath" \
+        PKG_ROWS="$WORK/rows" PKG_CHOICE="$WORK/choice" \
+        FZF_DEFAULT_OPTS="--bind $1" \
+        timeout 30 script -qc "bash $REPO/configs/myscripts/.config/myscripts/pkg.sh --pick" \
+        /dev/null >/dev/null 2>&1
+    cat "$WORK/choice"
+  }
+  check "enter installs the highlighted row and reports it done" \
+    test "$(pick_with 'load:accept')" = "$(printf 'pacman\tzzz-pkg-test\t0')"
+  check "moving down one row picks the next one" \
+    test "$(pick_with 'load:down+accept')" = "$(printf 'aur\tzzz-aur-test\t0')"
+  check "esc installs nothing" test -z "$(pick_with 'load:abort')"
+  check "picking a row the machine already has installs nothing (status 2)" \
+    test "$(pick_with 'load:down+down+accept')" = "$(printf 'pacman\tfzf\t2')"
+
+  # Search mode: no rows file, so the popup starts empty and every keystroke
+  # re-runs the search. Typing a name and pressing enter twice (once for the
+  # row, once for the popup's hold) must land on the exact pacman hit.
+  search_pick() {
+    : >"$WORK/choice"
+    { printf 'neovim'; sleep 3; printf '\r'; sleep 2; printf '\r'; sleep 1; } |
+      PATH="$PKG_BIN:/usr/bin:/bin" STUB_GOPATH="$WORK/gopath" \
+        PKG_ROWS="" PKG_CHOICE="$WORK/choice" \
+        timeout 40 script -qc "bash $REPO/configs/myscripts/.config/myscripts/pkg.sh --pick" \
+        /dev/null >/dev/null 2>&1
+    cat "$WORK/choice"
+  }
+  check "typing in the popup searches every manager and installs the pick" \
+    test "$(search_pick)" = "$(printf 'pacman\tneovim\t0')"
+
+  # ctrl-a (\001) ticks the row under the cursor, which moves it to the
+  # bottom of the list; alt-enter (\033\r) installs every ticked row, and
+  # enter installs nothing at all while any row is ticked. The keys are fed
+  # as keystrokes rather than as a load binding, because the bindings are
+  # what is under test.
+  # One key per argument, a beat apart: the reload a tick kicks off is
+  # asynchronous, so two ctrl-a's in the same breath would both land on the
+  # row that was under the cursor when the first one was pressed — and the
+  # second would untick it.
+  tick_pick() {
+    : >"$WORK/choice"
+    { sleep 1
+      for k in "$@"; do printf '%b' "$k"; sleep 2; done
+      sleep 2; printf '\r'; sleep 1; } |
+      PATH="$PKG_BIN:/usr/bin:/bin" STUB_GOPATH="$WORK/gopath" \
+        PKG_ROWS="$WORK/rows" PKG_CHOICE="$WORK/choice" \
+        timeout 40 script -qc "bash $REPO/configs/myscripts/.config/myscripts/pkg.sh --pick" \
+        /dev/null >/dev/null 2>&1
+    cat "$WORK/choice"
+  }
+  check "ctrl-a ticks a row and alt-enter installs every ticked one" \
+    test "$(tick_pick '\001' '\001' '\033\r')" = \
+      "$(printf 'pacman\tzzz-pkg-test\t0\naur\tzzz-aur-test\t0')"
+  check "enter installs nothing while a row is ticked" \
+    test -z "$(tick_pick '\001' '\r' '\033')"
+
+  # The same, in search mode: tick pacman's neovim, clear the query (\025 is
+  # ctrl-u), search for something else, and install with alt-enter. The tick
+  # has to survive the second search, and only the ticked row is installed —
+  # never whatever the cursor ended up on.
+  tick_search() {
+    : >"$WORK/choice"
+    { printf 'neovim'; sleep 3; printf '\001'; sleep 2; printf '\025fzf'; sleep 3;
+      printf '\033\r'; sleep 3; printf '\r'; sleep 1; } |
+      PATH="$PKG_BIN:/usr/bin:/bin" STUB_GOPATH="$WORK/gopath" \
+        PKG_ROWS="" PKG_CHOICE="$WORK/choice" \
+        timeout 60 script -qc "bash $REPO/configs/myscripts/.config/myscripts/pkg.sh --pick" \
+        /dev/null >/dev/null 2>&1
+    cat "$WORK/choice"
+  }
+  check "a tick survives the next search, and only ticked rows install" \
+    test "$(tick_search)" = "$(printf 'pacman\tneovim\t0')"
+
+  # An fzf given no input of its own runs FZF_DEFAULT_COMMAND and walks the
+  # current directory, which would open the search popup on a list of files.
+  # The marker file is how that shows up here: it must never be touched.
+  rm -f "$WORK/walked"
+  { sleep 1; printf '\033'; sleep 1; } |
+    PATH="$PKG_BIN:/usr/bin:/bin" STUB_GOPATH="$WORK/gopath" \
+      PKG_ROWS="" PKG_CHOICE="$WORK/choice" \
+      FZF_DEFAULT_COMMAND="touch $WORK/walked; echo bogus-row" \
+      timeout 30 script -qc "bash $REPO/configs/myscripts/.config/myscripts/pkg.sh --pick" \
+      /dev/null >/dev/null 2>&1
+  check "the search popup starts empty, not on a directory listing" \
+    not test -e "$WORK/walked"
+fi
+
+run_pkg --rows neovim
+check "--rows feeds the popup's live search" \
+  grep -qE '^\[ \] pacman +neovim' "$WORK/pkgout"
+check "a row for something not installed carries no installed marker" \
+  not grep -q 'already installed' "$WORK/pkgout"
+
+run_pkg --rows fzf
+check "a search row for something already here says so, before any enter" \
+  grep -q 'fzf .*● already installed with pacman' "$WORK/pkgout"
+check "and the row carries the holding manager for the preview" \
+  grep -qP '\tpacman\tfzf\tpacman$' "$WORK/pkgout"
+check "a one-letter query is not searched" \
+  test -z "$(run_pkg --rows n; cat "$WORK/pkgout")"
+
+
+# Whatever the popup did, it said so in there: closing it must not leave a
+# line behind, which under a tmux key binding would be a view window.
+if command -v fzf >/dev/null 2>&1; then
+  run_pkg_popup 'pacman\tneovim\t0' -i neovim
+  rc=$?
+  check "a popup install leaves no output outside the popup" \
+    not grep -qE 'installed neovim|install/packages' "$WORK/pkgout"
+  check "and still exits 0" test "$rc" -eq 0
+
+  run_pkg_popup 'pacman\tneovim\t1' -i neovim
+  check "a popup install that failed does not report it twice" \
+    not grep -q 'failed' "$WORK/pkgout"
+
+  run_pkg_popup '' -i neovim
+  rc=$?
+  check "a cancelled popup leaves no output either" \
+    not grep -q 'nothing installed' "$WORK/pkgout"
+  check "and exits 1" test "$rc" -eq 1
+
+  # The tmux key binding runs a bare pkg, and tmux announces any non-zero
+  # status as "'...pkg.sh' returned 1" over the session. Closing the picker
+  # is not a failure, so that entry point always succeeds.
+  run_pkg_popup '' 
+  rc=$?
+  check "a closed search popup is not a failed command" test "$rc" -eq 0
+  check "and prints nothing at all" test ! -s "$WORK/pkgout"
+
+  run_pkg_popup 'pacman\tneovim\t1'
+  rc=$?
+  check "nor is a failed install the key binding's problem" test "$rc" -eq 0
+fi
 
 run_pkg -i 'foo;rm -rf /'
 rc=$?
@@ -341,6 +542,81 @@ check "-i <manager>:<name> skips the search and uses that manager" \
 run_pkg -i npm:eslint
 check "-i maps an npm/pnpm/yarn prefix onto the one node registry" \
   grep -qE '(pnpm add -g|npm install -g) eslint' "$WORK/pkgout"
+
+# ---------------------------------------------------------------------------
+echo "update"
+# ---------------------------------------------------------------------------
+# Its own stub dir, holding every manager update.sh reaches for and nothing
+# else: no real paru or pacman can be found, so each check sees only what
+# the stubs were asked to do. The log is the assertion.
+UP_BIN="$WORK/upbin"
+UP_LOG="$WORK/uplog"
+mkdir -p "$UP_BIN"
+
+cat >"$UP_BIN/pacman" <<'STUB'
+#!/usr/bin/env bash
+printf 'pacman %s\n' "$*" >>"$UP_LOG"
+case "$1" in -Qtdq) printf 'orphan-one\norphan-two\n' ;; esac
+exit 0
+STUB
+
+cat >"$UP_BIN/sudo" <<'STUB'
+#!/usr/bin/env bash
+exec "$@"
+STUB
+
+cat >"$UP_BIN/paru" <<'STUB'
+#!/usr/bin/env bash
+printf 'paru %s\n' "$*" >>"$UP_LOG"
+exit "${STUB_UPGRADE_RC:-0}"
+STUB
+
+cat >"$UP_BIN/paccache" <<'STUB'
+#!/usr/bin/env bash
+printf 'paccache %s\n' "$*" >>"$UP_LOG"
+STUB
+cp "$UP_BIN/paccache" "$UP_BIN/pacdiff"
+chmod +x "$UP_BIN"/*
+
+# run_update [args...] — stubs first, the real managers unreachable.
+run_update() {
+  : >"$UP_LOG"
+  env -u TMUX PATH="$UP_BIN:/usr/bin:/bin" UP_LOG="$UP_LOG" NO_COLOR=1 \
+    STUB_UPGRADE_RC="${STUB_UPGRADE_RC:-0}" \
+    bash "$REPO/configs/myscripts/.config/myscripts/update.sh" "$@" \
+    >"$WORK/upout" 2>&1
+}
+
+run_update -n
+rc=$?
+check "a dry run exits 0" test "$rc" -eq 0
+check "a dry run prints the upgrade it would run" grep -q 'paru -Syu' "$WORK/upout"
+check "a dry run changes nothing" \
+  not grep -qE 'paru -Syu|pacman -Rns|paccache -r' "$UP_LOG"
+
+run_update
+check "the upgrade is the AUR helper's, not a second pacman -Syu" \
+  test "$(grep -c -- '-Syu' "$UP_LOG")" -eq 1
+check "orphans pacman reported are the ones removed" \
+  grep -q 'pacman -Rns orphan-one orphan-two' "$UP_LOG"
+check "two versions stay in the cache, uninstalled ones do not" \
+  test "$(grep -c -- 'paccache -rk2\|paccache -ruk0' "$UP_LOG")" -eq 2
+check "no -Sy without the u, ever" not grep -qE -- '-Sy( |$)|-Syy' "$UP_LOG"
+
+STUB_UPGRADE_RC=1 run_update
+rc=$?
+check "a failed upgrade exits 1" test "$rc" -eq 1
+check "and the cleanup never runs on a half-upgraded system" \
+  not grep -qE 'pacman -Rns|paccache' "$UP_LOG"
+unset STUB_UPGRADE_RC
+
+# An empty PATH on purpose: with the real /usr/bin here this check would
+# start a real upgrade.
+mkdir -p "$WORK/empty-bin"
+env PATH="$WORK/empty-bin" NO_COLOR=1 \
+  "$BASH" "$REPO/configs/myscripts/.config/myscripts/update.sh" >"$WORK/upout" 2>&1
+rc=$?
+check "without pacman it refuses to run" test "$rc" -eq 1
 
 # ---------------------------------------------------------------------------
 echo "os detection"

@@ -56,6 +56,7 @@ return {
 				"gofumpt",
 				"goimports",
 				"clang-format",
+				"gdtoolkit", -- gdformat + gdlint
 
 				-- Linters
 				"eslint_d",
@@ -81,6 +82,10 @@ return {
 
 		-- Enable gopls
 		vim.lsp.enable("gopls")
+
+		-- Godot ships its own GDScript LSP (TCP 6005), so mason can't install it.
+		vim.lsp.config("gdscript", { capabilities = capabilities })
+		vim.lsp.enable("gdscript")
 
 		-- Configure and enable other servers
 		for _, server in ipairs(servers) do

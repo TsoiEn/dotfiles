@@ -1,42 +1,52 @@
-# Zsh configuration
-
-export EDITOR="nvim"
-
-# Homebrew
-export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
-
-# User binaries
-export PATH="$HOME/.local/bin:$PATH"
+# Zsh entrypoint: sources ~/.config/zshrc/*.zsh in order, then machine-local
+# files. Put config in those files, not here.
+#
+#   00-init       env vars
+#   10-path       PATH
+#   20-shell      oh-my-zsh, prompt, fzf, history
+#   30-aliases    aliases
+#   40-functions  shell functions
+#   50-tools      zoxide, nvm
 
 ZSHRC_DIR="$HOME/.config/zshrc"
 
-if [[ -d "$ZSHRC_DIR" ]]; then
-    for file in "$ZSHRC_DIR"/*.zsh(N); do
-        [[ -r "$file" ]] && source "$file"
-    done
+for file in "$ZSHRC_DIR"/*.zsh(N) "$ZSH_LOCAL"/*.zsh(N); do
+    [[ -r "$file" ]] && source "$file"
+done
 
-    if [[ -d "$ZSH_LOCAL" ]]; then
-        for file in "$ZSH_LOCAL"/*.zsh(N); do
-            [[ -r "$file" ]] && source "$file"
-        done
-    fi
-fi
-
-# Absent on Linux, and on a macOS box without the nvm formula.
-[[ -r /opt/homebrew/opt/nvm/nvm.sh ]] && source /opt/homebrew/opt/nvm/nvm.sh
-
-# pnpm
-export PNPM_HOME="/Users/Aaron/Library/pnpm"
-case ":$PATH:" in
-  *":$PNPM_HOME/bin:"*) ;;
-  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
-esac
-# pnpm end
-export PATH=$PATH:$HOME/.maestro/bin
-
-# bun completions
-[ -s "/home/tsn/.bun/_bun" ] && source "/home/tsn/.bun/_bun"
-
-# bun
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
+# # >>> elio shell integration >>>
+# elio() {
+#     case "${1-}" in
+#         shell|portal|-*)
+#             command elio "$@"
+#             return $?
+#             ;;
+#     esac
+#
+#     local arg tmp cwd status_code
+#     for arg in "$@"; do
+#         case "$arg" in
+#             --chooser-file|--chooser-file=*)
+#                 command elio "$@"
+#                 return $?
+#                 ;;
+#         esac
+#     done
+#
+#     tmp="$(mktemp -t "elio-cwd.XXXXXX")" || return
+#     command elio --cwd-file "$tmp" "$@"
+#     status_code=$?
+#
+#     if [ -s "$tmp" ]; then
+#         cwd="$(cat -- "$tmp")"
+#         rm -f -- "$tmp"
+#         if [ -n "$cwd" ] && [ "$cwd" != "$PWD" ] && [ -d "$cwd" ]; then
+#             cd -- "$cwd" || return $?
+#         fi
+#     else
+#         rm -f -- "$tmp"
+#     fi
+#
+#     return "$status_code"
+# }
+# # <<< elio shell integration <<<

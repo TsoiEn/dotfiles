@@ -16,7 +16,7 @@ opt.smartindent = true -- Smarter auto-indentation
 opt.shiftround = true -- Round indents to multiples of 'shiftwidth'
 
 -- Wrapping
-opt.wrap = false -- Disable line wrapping
+opt.wrap = true -- Disable line wrapping
 opt.linebreak = true -- Break lines at word boundaries when wrapping is enabled
 opt.breakindent = true -- Indent wrapped lines visually
 

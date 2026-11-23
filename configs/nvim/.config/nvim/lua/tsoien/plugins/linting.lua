@@ -19,7 +19,12 @@ return {
 			svelte = { "eslint_d" },
 			css = { "stylelint" },
 			scss = { "stylelint" },
+			gdscript = { "gdlint" },
 		}
+
+		-- Use the repo's relaxed markdownlint rules
+		table.insert(lint.linters.markdownlint.args, 1, "--config")
+		table.insert(lint.linters.markdownlint.args, 2, vim.fn.stdpath("config") .. "/lintconfig/markdownlint.json")
 
 		-- Custom Ruff linter definition
 		lint.linters.ruff = {

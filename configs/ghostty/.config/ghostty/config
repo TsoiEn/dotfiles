@@ -1,3 +1,4 @@
+
 # theme
 theme = Rose Pine
 
@@ -6,6 +7,9 @@ font-size = 9
 
 # window decoration
 mouse-hide-while-typing = true
+mouse-reporting = false
+# toggle mouse reporting at runtime (e.g. to select text inside tmux/nvim)
+keybind = ctrl+shift+m=toggle_mouse_reporting
 window-decoration = true
 window-width = 1000
 window-height = 800
@@ -16,6 +20,5 @@ window-padding-x = 5,7
 window-padding-y = 5,7
 macos-titlebar-style = hidden
 macos-non-native-fullscreen = true
-
 # pointer
 cursor-style = block

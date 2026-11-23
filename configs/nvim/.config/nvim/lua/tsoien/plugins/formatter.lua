@@ -25,6 +25,7 @@ return {
 				go = { "goimports", "gofumpt" },
 				c = { "clang_format" },
 				cpp = { "clang_format" },
+				gdscript = { "gdformat" },
 			},
 
 			format_on_save = {
