@@ -3,6 +3,7 @@ terminal = "ghostty"
 
 [ui]
 start_in_grid = false       # start in grid view
+show_hidden = true         # always show dotfiles
 grid_zoom = 1              # grid density, 0–2
 folders_first = true      # mix folders and files (default true)
 default_sort = "name"  # initial sort: name, modified, or size
@@ -28,23 +29,23 @@ rules = [
 bg = "none"
 chrome = "none"
 chrome_alt = "none"
-border = "#6f7d8d"
+border = "#6e6a86"
 panel = "none"
 panel_alt = "none"
 surface = "none"
 elevated = "none"
 button_bg = "none"
 button_disabled_bg = "none"
-sidebar_active = "#1a2a43"
+sidebar_active = "#403d52"
 accent_soft = "none"
-progress_bar = "#41a0dc"
+progress_bar = "#9ccfd8"
 path_bg = "none"
 
 [preview.code]
 bg = "none"
 line_highlight = "none"
-comment = "#6f8399"         # comments
-string = "#79e7d5"          # quoted strings
-keyword = "#7aaeff"         # language keywords
-function = "#36d7ff"        # function names
-invalid = "#ff8585"         # invalid/error tokens
+comment = "#6e6a86"         # comments
+string = "#f6c177"          # quoted strings
+keyword = "#31748f"         # language keywords
+function = "#ebbcba"        # function names
+invalid = "#eb6f92"         # invalid/error tokens
