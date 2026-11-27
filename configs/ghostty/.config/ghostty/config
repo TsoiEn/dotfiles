@@ -1,24 +1,30 @@
-
 # theme
 theme = Rose Pine
 
 # font
 font-size = 9
 
-# window decoration
-mouse-hide-while-typing = true
-mouse-reporting = false
-# toggle mouse reporting at runtime (e.g. to select text inside tmux/nvim)
-keybind = ctrl+shift+m=toggle_mouse_reporting
+# window
 window-decoration = true
 window-width = 1000
 window-height = 800
-title = "×͜×"
-background-opacity = 0.8
 window-padding-balance = true
 window-padding-x = 5,7
 window-padding-y = 5,7
+background-opacity = 0.8
+title = "×͜×"
+
+# macos
 macos-titlebar-style = hidden
 macos-non-native-fullscreen = true
-# pointer
+
+# mouse
+mouse-hide-while-typing = true
+mouse-reporting = false
+
+# cursor
 cursor-style = block
+
+# keybinds
+# toggle mouse reporting at runtime (e.g. to select text inside tmux/nvim)
+keybind = ctrl+shift+m=toggle_mouse_reporting

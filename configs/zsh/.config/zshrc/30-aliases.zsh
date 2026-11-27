@@ -22,7 +22,7 @@ alias src='source ~/.zshrc'
 alias ld='lazydocker'
 alias lg='lazygit'
 alias oc='opencode'
-alias cj='claude'
+alias cld='claude'
 alias ts='~/.config/tmuxScript/sessionizer.sh'
 
 # -----------------------------------------------------

@@ -74,6 +74,16 @@ alt-tab = 'workspace-back-and-forth'
 alt-shift-tab = 'move-workspace-to-monitor --wrap-around next'
 
 alt-shift-semicolon = 'mode service'
+alt-shift-m = 'mode manual'
+
+# Set an orientation by hand instead of letting alt-slash toggle it.
+# v_tiles stacks windows up/down, h_tiles side by side.
+[mode.manual.binding]
+esc = 'mode main'
+j = ['layout v_tiles', 'mode main']
+k = ['layout v_tiles', 'mode main']
+h = ['layout h_tiles', 'mode main']
+l = ['layout h_tiles', 'mode main']
 
 [mode.service.binding]
 esc = ['reload-config', 'mode main']

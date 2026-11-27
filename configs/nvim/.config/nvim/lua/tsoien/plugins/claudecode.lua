@@ -25,6 +25,22 @@ return {
 	-- The Claude terminal is a terminal buffer, so <C-hjkl> would go to the TUI
 	-- instead of vim-tmux-navigator. Hand those four keys back to the navigator.
 	init = function()
+		-- Claude edits files on disk behind our back; nvim's 'autoread' only acts on a
+		-- :checktime, which nothing triggers while the cursor sits in the Claude terminal.
+		vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold", "TermLeave" }, {
+			callback = function()
+				-- checktime errors inside the command-line window
+				if vim.fn.getcmdwintype() == "" then
+					vim.cmd("checktime")
+				end
+			end,
+		})
+		vim.api.nvim_create_autocmd("FileChangedShellPost", {
+			callback = function()
+				vim.notify("File changed on disk, buffer reloaded", vim.log.levels.INFO)
+			end,
+		})
+
 		vim.api.nvim_create_autocmd("FileType", {
 			pattern = "claudecode",
 			callback = function(ev)
